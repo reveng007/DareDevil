@@ -1,7 +1,9 @@
 # DareDevil
 Stealthy Loader-cum-dropper/stage-1/stager targeting Windows10
 
-How to use Obfuscator/encrypt.cs:
+### Tools usage:
+
+Obfuscator/encrypt.cs:
 1. [For shellcode extraction and encryption]: place it in the directory in which .bin file is present.
 2. [For url encryption]: Nothing! Just paste and run.
 
