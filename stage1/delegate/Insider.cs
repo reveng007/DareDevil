@@ -833,8 +833,7 @@ namespace Insider
 2. Dropper
     2.1: Dropper: Use embeded shellcode url
     2.2: Dropper: Use Custom shellcode via external url (External Code designing is needed based on type of shellcode and url)
-3. Loopper (Extracts shellcode from .NET payloads)
-4. To exit
+3. To exit
 [>] ");
                 string serialnum = Console.ReadLine();
 
@@ -847,7 +846,7 @@ namespace Insider
 
                 string serialnum = Banner();
 
-                if (serialnum.Equals("4"))
+                if (serialnum.Equals("3"))
                 {
                     System.Environment.Exit(1);
                 }
@@ -863,10 +862,6 @@ namespace Insider
                     string arg = Console.ReadLine();
                     Dropper(arg);
 
-                }
-                else if(serialnum.Equals("3"))
-                {
-                    //Loopper();
                 }
                 else
                 {
