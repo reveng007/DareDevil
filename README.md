@@ -15,7 +15,7 @@ Apart from the above shown diagram other abilties are:
 2. All function call obfuscation => loadlibrary and GetProcAddress => DInvoke
 3. Abilty to detect and detach from debugger by using, NtQueryInformationProcess() and NtRemoveProcessDebug() respectively.
 
-### Tools usage:
+### Tools: Usage
 
 - Obfuscator/encrypt.cs:
 1. [For shellcode extraction and encryption]: place it in the directory in which .bin file is present.
