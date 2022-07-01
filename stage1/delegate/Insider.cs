@@ -534,8 +534,6 @@ namespace Insider
 
                     // With this we can make non-interractive program interractive, thereby maintaining stealth!
 
-                    // Though smtp mailing thing should be a concern:   =>      But with InstallUtil.exe, it can reduced to some extent (probably..! ¯\_(ツ)_/¯)
-
                     //==========================================================================NOTE===================================================================
 
                     CheckDebugger();
