@@ -68,17 +68,25 @@ Usage:
 #### NOTE:
 I have named AMSI&ETW bypass .NET Assembly as mscorlib because if by chance, it is seen by an Blue Teamer and if that particular member is less experienced, the name `"mscorlib"` can bamboozle, making them think, "Hey, yes!! a .NET binary always loads up something called, mscorlib. It contains the core implementation of the .NET framework." Though there is very little chance of our mscorlib.exe of getting caught running as a process in memory as it is visible a very little amount of time in process memory unless our dropper is getting debugged ;(.
 
+### Video:
+[video]
+
 ### Internal Noticing:
 
 - Only ProcessHacker:
-[<processhacker0>]
+
+[processhacker0: Video]
+
 I saw that even after providing Read-Execute permission to the allocated shellcode memory region, it wasn't shown as RX in ProcessHacker. Strangely enough, the bool value for VirtualProtectEx was also ***True*** while protecting target process memory with 0x20 (PAGE_EXECUTE_READ)[https://docs.microsoft.com/en-us/windows/win32/Memory/memory-protection-constants#constants].
 
 - Moneta:
 But with moneta, we can see it. 
-[<moneta>]
+
+[moneta]
+
 But without knowing the actual address, it is not getting shown by Process Hacker. It only not be visible from outside. It can bypass BlueTeam, unless the BlueTeamer isn't aware of this particular process memory address.
-[<processHacker_addr1_addr2>]
+
+[processHacker_addr1_addr2]
 
 - Floss:
 
@@ -94,6 +102,6 @@ But without knowing the actual address, it is not getting shown by Process Hacke
     - [specterops:Matt Hand](https://posts.specterops.io/offensive-p-invoke-leveraging-the-win32-api-from-managed-code-7eef4fdef16d)
 4. delegate:
 5. DInvoke:
-6. [@_winterknife_](https://twitter.com/_winterKnife_):For clearly making me understand the difference between stage-0, stage-1, stage-2, stage-3, etc payloads.
+6. [@_winterknife_](https://twitter.com/_winterKnife_): For clearly making me understand the difference between stage-0, stage-1, stage-2, stage-3, etc payloads.
 7. Took reference from [FalconStrike](https://slaeryan.github.io/posts/falcon-zero-alpha.html) by [@_winterknife_](https://twitter.com/_winterKnife_).
 8. [@SoumyadeepBas12](https://twitter.com/SoumyadeepBas12): For helping me to succesfully evade the last AV, to get a clean sheet from [antiscan.me](https://antiscan.me/), it was really a pain to get over this AV, but  I did it ;).
