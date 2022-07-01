@@ -106,6 +106,7 @@ But without knowing the actual address, it is not getting shown by Process Hacke
     - [specterops:Matt Hand](https://posts.specterops.io/offensive-p-invoke-leveraging-the-win32-api-from-managed-code-7eef4fdef16d)
 4. delegate:
 5. DInvoke:
-6. [@_winterknife_](https://twitter.com/_winterKnife_): For clearly making me understand the difference between stage-0, stage-1, stage-2, stage-3, etc payloads.
-7. Took reference from [FalconStrike](https://slaeryan.github.io/posts/falcon-zero-alpha.html) by [@_winterknife_](https://twitter.com/_winterKnife_).
-8. [@SoumyadeepBas12](https://twitter.com/SoumyadeepBas12): For helping me to succesfully evade the last AV, to get a clean sheet from [antiscan.me](https://antiscan.me/), it was really a pain to get over this AV, but  I did it ;).
+7. Obviously, the infamous [RTO:MalwareDevelopmentEssentials](https://institute.sektor7.net/red-team-operator-malware-development-essentials) course by [@SEKTOR7net](https://twitter.com/sektor7net).
+8. [@_winterknife_](https://twitter.com/_winterKnife_): For clearly making me understand the difference between stage-0, stage-1, stage-2, stage-3, etc payloads.
+9. Took reference from [FalconStrike](https://slaeryan.github.io/posts/falcon-zero-alpha.html) by [@_winterknife_](https://twitter.com/_winterKnife_).
+10. [@SoumyadeepBas12](https://twitter.com/SoumyadeepBas12): For helping me to succesfully evade the last AV, to get a clean sheet from [antiscan.me](https://antiscan.me/), it was really a pain to get over this AV, but  I did it ;).
