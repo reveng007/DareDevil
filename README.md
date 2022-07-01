@@ -6,10 +6,11 @@ Remove Looper.....
 
 
 ### Technology behind Insider:
-![](<img>)
+
+![Insider](https://user-images.githubusercontent.com/61424547/176930902-42f5bd9d-c1cd-4c73-a15e-cc5731d55d63.png)
 
 ### Ability:
-Apart from the shown diagram other abilties are:
+Apart from the above shown diagram other abilties are:
 1. Sensitive string Obfuscation: Needed ! => Dinvoke and dll names (Update encrypt.cs)
 2. All function call obfuscation => loadlibrary and GetProcAddress => DInvoke
 3. Abilty to detect and detach from debugger by using, NtQueryInformationProcess() and NtRemoveProcessDebug() respectively.
@@ -17,14 +18,14 @@ Apart from the shown diagram other abilties are:
 ### Tools usage:
 
 - Obfuscator/encrypt.cs:
-1. [For shellcode/PIC blob extraction and encryption]: place it in the directory in which .bin file is present.
+1. [For shellcode extraction and encryption]: place it in the directory in which .bin file is present.
 2. [For url encryption]: Nothing! Just paste and run.
 
 Example:
 ```
 It can encrypt 'shellcode' and 'url' to xor, aes, aes_xor and aes_xor_b64:
 
-// Creating .bin file and Extracting PIC blob from .bin file:
+// Creating .bin file and Extracting shellcode from .bin file:
 // Creating: https://ivanitlearning.wordpress.com/2018/10/14/shellcoding-with-msfvenom/
 // Extract: 
 cmd> encrypt.exe /file:file.bin /out:aes_xor_b64
@@ -42,7 +43,7 @@ cmd> encrypt.exe /remotewriteurl:<url>.exe /out:aes_xor_b64
 cmd> encrypt.exe /remotereadurl:<url>.txt /out:aes_xor_b64
 ```
 
-- stage2/remotewrite.cs:
+- stage2/remotewrite.cs:\
 Why I made RemoteWrite.cs?
 ```
 1. If I wanted to make this loader_cum_dropper invisible (compilation: csc.exe /target:winexe /platform:x64 /out:Insider.exe  .\Insider.cs), the enumerated process name and process id, made by it, can't be seen by me.
@@ -66,35 +67,43 @@ Usage:
 3. Compile: Obfuscator/encrypt.cs with compile.bat, stage2/remotewrite.cs with compile_remotewrite.bat (but at first write the credentials of sender's and receiver's/Operator's gmail) and stage2/mscorlib.cs with compile_mscorlib.bat.
 4. Now upload/ host those two stage2 in payload server/ github(github: because it will not be considered as malicious as it is considered to be a legitimate website. So, malware traffic from github will not be considered as creepy stuff, instead of that, it would be considered as legitimate).
 5. Encrypt those two urls using "Obfuscator/encrypt.exe" file with the previously mentioned flags and use those in "stage1/{ }/Insider.cs".
-6. Get your encrypted PIC blob, by following my previously mentioned flags in "Obfuscator/encrypt.exe" section and paste the encrypted PIC blob in a text file, then host it in payload server/ github. Then again encrypt that url with "Obfuscator/encrypt.exe" and paste that in "stage1/{ }/Insider.cs".
-7. Now, compile the "stage1/{ }/Insider.cs" with compile.bat and put it in an antivirus enabled windows 10 and test it.
+6. Encrypt your shellcode, by following my previously mentioned flags in "Obfuscator/encrypt.exe" section and paste the encrypted shellcode in a text file host it in payload server/ github. Then again encrypt that url with "Obfuscator/encrypt.exe" and paste that in "stage1/{ }/Insider.cs".
+7. Now, compile the "stage1/{ }/Insider.cs" with compile.bat and put it in an antivirus enabled windows 10 nad test it.
 ```
 #### NOTE:
-I have named AMSI&ETW bypass .NET Assembly as mscorlib because if by chance, it is seen by an Blue Teamer and if that particular member is less experienced, the name `"mscorlib"` can bamboozle, making them think, "Hey, yes!! a .NET binary always loads up something called, mscorlib. It contains the core implementation of the .NET framework." Though there is very little chance of our mscorlib.exe of getting caught running as a process in memory as it is visible a very little amount of time in process memory unless our dropper is getting debugged ;(.
+I have named AMSI&ETW bypass .NET Assembly as "_mscorlib_" because if by chance, it is seen by a Blue Teamer and if that particular member is less experienced, the name `"mscorlib"` can bamboozle, making them think, "Hey, yes!! a .NET binary always loads up something called, mscorlib. It contains the core implementation of the .NET framework." Though there is a very little chance of our "_mscorlib.exe_" of getting caught running as a process in memory, as it is visible only a very little amount of time (probably in ms) in our dropper process memory, unless our dropper is getting debugged ;(.
 
 ### Video:
 [video]
 
-### Internal Noticing:
+### <ins>Internal Noticing</ins>:
 
-- Only ProcessHacker:
+#### ProcessHacker (only):
 
-[processhacker0: Video]
+https://user-images.githubusercontent.com/61424547/176947727-e37a484c-db28-495f-8cb2-0ab6eb1a3c81.mp4
 
-I saw that even after providing Read-Execute permission to the allocated shellcode memory region, it wasn't shown as RX in ProcessHacker. Strangely enough, the bool value for VirtualProtectEx was also ***True*** while protecting target process memory with 0x20 (PAGE_EXECUTE_READ)[https://docs.microsoft.com/en-us/windows/win32/Memory/memory-protection-constants#constants].
+I saw that even after providing Read-Execute permission to the allocated shellcode memory region, it wasn't shown as RX in ProcessHacker. Strangely enough, the bool value for VirtualProtectEx was also ***True*** while protecting target process memory with 0x20 [PAGE_EXECUTE_READ](https://docs.microsoft.com/en-us/windows/win32/Memory/memory-protection-constants#constants).
 
-- Moneta:
+#### Moneta:
 But with moneta, we can see it. 
 
-[moneta]
+![moneta](https://user-images.githubusercontent.com/61424547/176948027-7bdc8c7e-7773-48a1-ae9f-06ea54b700be.png)
 
 But without knowing the actual address, it is not getting shown by Process Hacker. It only not be visible from outside. It can bypass BlueTeam, unless the BlueTeamer isn't aware of this particular process memory address.
 
-[processHacker_addr1_addr2]
+![processHacker](https://user-images.githubusercontent.com/61424547/176948132-1ffce1c6-ac63-472d-b8bc-a217791ab911.png)
 
-- Floss:
+#### Floss:
 
-- AV Bypass [Antiscan.me]():
+#### WireShark Capture:
+
+![SMTP_wireshark](https://user-images.githubusercontent.com/61424547/176946689-09192c06-6894-4d3b-a034-1a641d7c4de4.png)
+
+We can see that the text(process infos) sent out are all encrypted by Gmail's TLS encryption. On top of that, the ip address (marked) isn't suspicious at all, or in other words are OPSEC safe.
+
+![MailServer_iplookup](https://user-images.githubusercontent.com/61424547/176946957-60f1dce9-983e-4314-9fd8-6f54cbc04de7.PNG)
+
+#### AV Bypass [Antiscan.me]():
 
 
 ### Resources and Credits:
@@ -110,3 +119,4 @@ But without knowing the actual address, it is not getting shown by Process Hacke
 8. [@_winterknife_](https://twitter.com/_winterKnife_): For clearly making me understand the difference between stage-0, stage-1, stage-2, stage-3, etc payloads.
 9. Took reference from [FalconStrike](https://slaeryan.github.io/posts/falcon-zero-alpha.html) by [@_winterknife_](https://twitter.com/_winterKnife_).
 10. [@SoumyadeepBas12](https://twitter.com/SoumyadeepBas12): For helping me to succesfully evade the last AV, to get a clean sheet from [antiscan.me](https://antiscan.me/), it was really a pain to get over this AV, but  I did it ;).
+
