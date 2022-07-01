@@ -17,14 +17,14 @@ Apart from the shown diagram other abilties are:
 ### Tools usage:
 
 - Obfuscator/encrypt.cs:
-1. [For shellcode extraction and encryption]: place it in the directory in which .bin file is present.
+1. [For shellcode/PIC blob extraction and encryption]: place it in the directory in which .bin file is present.
 2. [For url encryption]: Nothing! Just paste and run.
 
 Example:
 ```
 It can encrypt 'shellcode' and 'url' to xor, aes, aes_xor and aes_xor_b64:
 
-// Creating .bin file and Extracting shellcode from .bin file:
+// Creating .bin file and Extracting PIC blob from .bin file:
 // Creating: https://ivanitlearning.wordpress.com/2018/10/14/shellcoding-with-msfvenom/
 // Extract: 
 cmd> encrypt.exe /file:file.bin /out:aes_xor_b64
@@ -66,8 +66,8 @@ Usage:
 3. Compile: Obfuscator/encrypt.cs with compile.bat, stage2/remotewrite.cs with compile_remotewrite.bat (but at first write the credentials of sender's and receiver's/Operator's gmail) and stage2/mscorlib.cs with compile_mscorlib.bat.
 4. Now upload/ host those two stage2 in payload server/ github(github: because it will not be considered as malicious as it is considered to be a legitimate website. So, malware traffic from github will not be considered as creepy stuff, instead of that, it would be considered as legitimate).
 5. Encrypt those two urls using "Obfuscator/encrypt.exe" file with the previously mentioned flags and use those in "stage1/{ }/Insider.cs".
-6. Encrypt your shellcode, by following my previously mentioned flags in "Obfuscator/encrypt.exe" section and paste the encrypted shellcode in a text file host it in payload server/ github. Then again encrypt that url with "Obfuscator/encrypt.exe" and paste that in "stage1/{ }/Insider.cs".
-7. Now, compile the "stage1/{ }/Insider.cs" with compile.bat and put it in an antivirus enabled windows 10 nad test it.
+6. Get your encrypted PIC blob, by following my previously mentioned flags in "Obfuscator/encrypt.exe" section and paste the encrypted PIC blob in a text file, then host it in payload server/ github. Then again encrypt that url with "Obfuscator/encrypt.exe" and paste that in "stage1/{ }/Insider.cs".
+7. Now, compile the "stage1/{ }/Insider.cs" with compile.bat and put it in an antivirus enabled windows 10 and test it.
 ```
 #### NOTE:
 I have named AMSI&ETW bypass .NET Assembly as mscorlib because if by chance, it is seen by an Blue Teamer and if that particular member is less experienced, the name `"mscorlib"` can bamboozle, making them think, "Hey, yes!! a .NET binary always loads up something called, mscorlib. It contains the core implementation of the .NET framework." Though there is very little chance of our mscorlib.exe of getting caught running as a process in memory as it is visible a very little amount of time in process memory unless our dropper is getting debugged ;(.
