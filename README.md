@@ -4,6 +4,12 @@ Stealthy Loader-cum-dropper/stage-1/stager targeting Windows10
 ### Technology behind Insider:
 ![](<img>)
 
+### Ability:
+Apart from the shown diagram other abilties are:
+1. Sensitive string Obfuscation: Needed ! => Dinvoke and dll names (Update encrypt.cs)
+2. All function call obfuscation => loadlibrary and GetProcAddress => DInvoke
+3. Abilty to detect and detach from debugger by using, NtQueryInformationProcess() and NtRemoveProcessDebug() respectively.
+
 ### Tools usage:
 
 - Obfuscator/encrypt.cs:
