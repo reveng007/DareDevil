@@ -56,7 +56,7 @@ Why I made RemoteWrite.cs?
 ```
 In this way, I made un-interactive program, interactive.
 
-- stage2/mscorlib.cs:
+- stage2/mscorlib.cs:\
 It is the re-implementation of AMSI and ETW bypass done in [SharpSploit](https://github.com/cobbr/SharpSploit/blob/master/SharpSploit/Evasion/ETW.cs) and [AmsiScanBufferBypass](https://github.com/rasta-mouse/AmsiScanBufferBypass/blob/main/AmsiBypass.cs) by [@RastaMouse](https://twitter.com/_rastamouse?lang=en). It was actually covered by [@Jean_Maes_1994](https://twitter.com/jean_maes_1994) in his workshop in <ins>SANS Offensive</ins>.
 
 - stage1/{ }/Insider.cs:
