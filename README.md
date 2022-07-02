@@ -7,8 +7,8 @@ Stealthy Loader-cum-dropper/stage-1/stager targeting Windows10
 
 ### Ability:
 Apart from the above shown diagram other abilties are:
-1. Sensitive string Obfuscation: Needed ! => Dinvoke and dll names (Update encrypt.cs)
-2. All function call obfuscation => loadlibrary and GetProcAddress => DInvoke
+1. Sensitive string Obfuscation: Needed ! => (Update encrypt.cs)
+2. All function calls are obsfuscation except `LoadLibrary()` and `GetProcAddress()`.
 3. Abilty to detect and detach from debugger by using, NtQueryInformationProcess() and NtRemoveProcessDebug() respectively.
 
 ### Tools: Usage
@@ -79,6 +79,7 @@ I have named AMSI&ETW bypass .NET Assembly as "_mscorlib_" because if by chance,
 https://user-images.githubusercontent.com/61424547/176947727-e37a484c-db28-495f-8cb2-0ab6eb1a3c81.mp4
 
 I saw that even after providing Read-Execute permission to the allocated shellcode memory region, it wasn't shown as RX in ProcessHacker. Strangely enough, the bool value for VirtualProtectEx was also ***True*** while protecting target process memory with 0x20 [PAGE_EXECUTE_READ](https://docs.microsoft.com/en-us/windows/win32/Memory/memory-protection-constants#constants).
+I think this is happening because we applied page RW memory protection with `VirtualAllocEx()`. Then before creating the remote thread, we are allocating RX memory protection with `VirtualProtectEx()`. Not that sure of. If anybody seeing this, know about this, please correct me ;(
 
 #### Moneta:
 But with moneta, we can see it. 
@@ -101,6 +102,9 @@ We can see that the text(process infos) sent out are all encrypted by Gmail's TL
 
 #### AV Bypass [Antiscan.me]():
 
+
+#### Limitations:
+1. Vulnerable to [Floss](https://github.com/mandiant/flare-floss)
 
 ### Resources and Credits:
 
