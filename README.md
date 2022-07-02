@@ -1,10 +1,6 @@
 # DareDevil
 Stealthy Loader-cum-dropper/stage-1/stager targeting Windows10
 
-# DOs:
-Remove Looper.....
-
-
 ### Technology behind Insider:
 
 ![Insider](https://user-images.githubusercontent.com/61424547/176930902-42f5bd9d-c1cd-4c73-a15e-cc5731d55d63.png)
