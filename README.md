@@ -2,9 +2,7 @@
 Stealthy Loader-cum-dropper/stage-1/stager targeting Windows10
 
 ### MUST Before Public:
-1. Remove remotewrite.exe as well from Executable repo...
-2. Update encrypt.exe
-3. Update Insider.exe
+1. Update Insider.exe
 
 ### Technology behind Insider:
 
@@ -126,6 +124,11 @@ When I commented out Dropper part, I got this: [dropper](https://antiscan.me/sca
 When I used the whole binary, I got the above detection stats as I had already shown above :woozy_face:. \
 According to mathematics, I  should have got 4 detections, why one and why that particular AV only?\
 I am really not getting it, if I get time, I will look into it, again. Not getting a cleansheet is really annoying ;(
+
+### Edit: 
+If you Ask me, "Why have I used _AES_ encryption with url why not environmental keying factor?"\
+My answer would be, that would also work fine!\
+I was feeling lazy to remove AES and apply environmental XOR keying. But this will not do any harm. But I changed the string obfuscation part from AES encryption to environmental XOR keying as if I did not do that, this dropper would be flagged by _Floss_ by outputing sentive strings like hardcoded xor keys.
 
 ### Resources and Credits:
 
