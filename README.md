@@ -134,7 +134,7 @@ I was feeling lazy to remove AES and apply environmental XOR keying. But this wi
 I changed the string obfuscation part from AES encryption to environmental XOR keying as if I did not do that, this dropper would be flagged by _Floss_ by outputing sentive strings like hardcoded xor keys. But in this case, we are using trgt machine's username as xor key, so no need of hardcoding.
 
 ### Edit:
-But one thing, I found out now, Floss was able to extract AES key not the AES salt/iv though. This will still casue pain to BlueTeamers to extract the actual AES salt value, to decrypt the encrypted text. But anyways, I will be updating this AES poriton within few days only.
+But one thing, I found out now, Floss was able to extract AES key not the AES salt/iv though. This will still casue pain to BlueTeamers to extract the actual AES salt value, to decrypt the encrypted text. But anyways, I will be updating this AES portion within few days only.
 
 ### Resources and Credits:
 
