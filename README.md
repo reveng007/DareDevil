@@ -128,10 +128,13 @@ When I used the whole binary, I got the above detection stats as I had already s
 According to mathematics, I  should have got 4 detections, why one ? and why that particular AV only?\
 I am really not getting it, if I get time, I will look into it, again. Not getting a cleansheet is really annoying ;(
 
-### Edit: 
-If you Ask me, "Why have I used _AES_ encryption with url why not environmental keying factor?"\
+- If you Ask me, "Why have I used _AES_ encryption with url why not environmental keying factor?"\
 My answer would be, that would also work fine!\
-I was feeling lazy to remove AES and apply environmental XOR keying. But this will not do any harm. But I changed the string obfuscation part from AES encryption to environmental XOR keying as if I did not do that, this dropper would be flagged by _Floss_ by outputing sentive strings like hardcoded xor keys. But in this case, we are using trgt machine's username as xor key, so no need of hardcoding.
+I was feeling lazy to remove AES and apply environmental XOR keying. But this will not do any harm.\
+I changed the string obfuscation part from AES encryption to environmental XOR keying as if I did not do that, this dropper would be flagged by _Floss_ by outputing sentive strings like hardcoded xor keys. But in this case, we are using trgt machine's username as xor key, so no need of hardcoding.
+
+### Edit:
+But one thing, I found out now, Floss is able to extract AES key not the AES salt/iv though. This will still casue pain to BlueTeamers to extract the actual AES salt value. But anyways, I will be updating this AES poriton within few days only.
 
 ### Resources and Credits:
 
