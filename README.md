@@ -1,15 +1,21 @@
 # DareDevil
 Stealthy Loader-cum-dropper/stage-1/stager targeting Windows10
 
+### MUST Before Public:
+1. Remove remotewrite.exe as well from Executable repo...
+2. Update encrypt.exe
+3. Update Insider.exe
+
 ### Technology behind Insider:
 
 ![Insider](https://user-images.githubusercontent.com/61424547/176930902-42f5bd9d-c1cd-4c73-a15e-cc5731d55d63.png)
 
 ### Ability:
 Apart from the above shown diagram other abilties are:
-1. Sensitive string Obfuscation: Needed ! => (Update encrypt.cs)
-2. All function calls are obsfuscation except `LoadLibrary()` and `GetProcAddress()`.
-3. Abilty to detect and detach from debugger by using, NtQueryInformationProcess() and NtRemoveProcessDebug() respectively.
+1. Sensitive string Obfuscation using Environmental Keying (TTP ID: T1480.00)[https://attack.mitre.org/techniques/T1480/001/]. I became aware of this concept from _[<ins>SANS Offensive WorkShop</ins>](https://www.sans.org/offensive-operations/): ['From zero to hero: Creating a reflective loader in C#'](https://www.youtube.com/watch?v=qeOCZGuVsi4)_ by [@Jean_Maes_1994](https://twitter.com/jean_maes_1994) and from [FalconStrike](https://slaeryan.github.io/posts/falcon-zero-alpha.html) by [@_winterknife_](https://twitter.com/_winterKnife_).
+2. All function calls are Obfuscated using delegate, except `LoadLibrary()` and `GetProcAddress()`.\
+Tried using DInvoke to Obfuscate `LoadLibrary()` and `GetProcAddress()` but instead, it got detected by 5 more AV engines ;(
+4. Abilty to Detect and Detach from debugger by using, `NtQueryInformationProcess()` and `NtRemoveProcessDebug()` respectively.
 
 ### Tools: Usage
 
@@ -19,24 +25,27 @@ Apart from the above shown diagram other abilties are:
 
 Example:
 ```
-It can encrypt 'shellcode' and 'url' to xor, aes, aes_xor and aes_xor_b64:
+It can encrypt 'shellcode', 'url' and string:
 
 // Creating .bin file and Extracting shellcode from .bin file:
 // Creating: https://ivanitlearning.wordpress.com/2018/10/14/shellcoding-with-msfvenom/
 // Extract: 
-cmd> encrypt.exe /file:file.bin /out:aes_xor_b64
+cmd> encrypt.exe /file:file.bin /out:aes_b64
 
 // paste the output b64 bytes into a .txt file and upload it to payload server.
 // cmd: "mv .\obfuscator\"
-cmd> encrypt.exe /shellcodeurl:<url>.txt /out:aes_xor_b64
+cmd> encrypt.exe /shellcodeurl:<url>.txt /out:aes_b64
 
-cmd> encrypt.exe /mscorliburl:<url>.exe /out:aes_xor_b64
+cmd> encrypt.exe /mscorliburl:<url>.exe /out:aes_b64
 
 // For Sending/ exfiltrating Victim process name and Ids to Operator Gmail via SMTP server
-cmd> encrypt.exe /remotewriteurl:<url>.exe /out:aes_xor_b64
+cmd> encrypt.exe /remotewriteurl:<url>.exe /out:aes_b64
 
 // For reading pid from pid.txt from payload server/ remote c2 server
-cmd> encrypt.exe /remotereadurl:<url>.txt /out:aes_xor_b64
+cmd> encrypt.exe /remotereadurl:<url>.txt /out:aes_b64
+
+// Sensitive strings Obfuscation
+cmd> encrypt.exe /string:<string1,string2,...,stringn> /xor_key:<usernameoftarget> /out:xor_b64
 ```
 
 - stage2/remotewrite.cs:\
@@ -55,22 +64,24 @@ In this way, I made un-interactive program, interactive.
 - stage2/mscorlib.cs:\
 It is the re-implementation of AMSI and ETW bypass done in [SharpSploit](https://github.com/cobbr/SharpSploit/blob/master/SharpSploit/Evasion/ETW.cs) and [AmsiScanBufferBypass](https://github.com/rasta-mouse/AmsiScanBufferBypass/blob/main/AmsiBypass.cs) by [@RastaMouse](https://twitter.com/_rastamouse?lang=en). It was actually covered by [@Jean_Maes_1994](https://twitter.com/jean_maes_1994) in his workshop in <ins>SANS Offensive</ins>.
 
-- stage1/{ }/Insider.cs:
+- stage1/Insider.cs:
 Usage:
 ```
 1. I have used Developer Powershell/cmd for VS 2019
 2. cmd> git clone https://github.com/reveng007/DareDevil
 3. Compile: Obfuscator/encrypt.cs with compile.bat, stage2/remotewrite.cs with compile_remotewrite.bat (but at first write the credentials of sender's and receiver's/Operator's gmail) and stage2/mscorlib.cs with compile_mscorlib.bat.
 4. Now upload/ host those two stage2 in payload server/ github(github: because it will not be considered as malicious as it is considered to be a legitimate website. So, malware traffic from github will not be considered as creepy stuff, instead of that, it would be considered as legitimate).
-5. Encrypt those two urls using "Obfuscator/encrypt.exe" file with the previously mentioned flags and use those in "stage1/{ }/Insider.cs".
-6. Encrypt your shellcode, by following my previously mentioned flags in "Obfuscator/encrypt.exe" section and paste the encrypted shellcode in a text file host it in payload server/ github. Then again encrypt that url with "Obfuscator/encrypt.exe" and paste that in "stage1/{ }/Insider.cs".
-7. Now, compile the "stage1/{ }/Insider.cs" with compile.bat and put it in an antivirus enabled windows 10 nad test it.
+5. Encrypt those two urls using "Obfuscator/encrypt.exe" file with the previously mentioned flags and use those in "stage1/Insider.cs".
+6. Encrypt your shellcode, by following my previously mentioned flags in "Obfuscator/encrypt.exe" section and paste the encrypted shellcode in a text file host it in payload server/ github. Then again encrypt that url with "Obfuscator/encrypt.exe" and paste that in "stage1/Insider.cs".
+7. Now, compile the "stage1/Insider.cs" with compile.bat and put it in an antivirus enabled windows 10 nad test it.
 ```
 #### NOTE:
-I have named AMSI&ETW bypass .NET Assembly as "_mscorlib_" because if by chance, it is seen by a Blue Teamer and if that particular member is less experienced, the name `"mscorlib"` can bamboozle, making them think, "Hey, yes!! a .NET binary always loads up something called, mscorlib. It contains the core implementation of the .NET framework." Though there is a very little chance of our "_mscorlib.exe_" of getting caught running as a process in memory, as it is visible only a very little amount of time (probably in ms) in our dropper process memory, unless our dropper is getting debugged ;(.
+I have named AMSI&ETW bypass .NET Assembly as "_mscorlib_" because if by chance, it is seen by a Blue Teamer and if that particular member is less experienced, the name `"mscorlib"` can bamboozle, making them think, "Hey, yes!! a .NET binary always loads up something called, mscorlib. It contains the core implementation of the .NET framework." Though there is a very little chance of our "_mscorlib.exe_" of getting caught running as a process in memory, as it is visible only a very little amount of time (probably in ms) in our dropper process memory, unless our dropper is getting debugged ;(.\
+BTW, This bamboozle thing was also told by Jean Maes :smile:.
 
 ### Video:
-[video]
+
+https://user-images.githubusercontent.com/61424547/177029414-1b3b09e0-d00c-4b96-882f-aa614f2a44ec.mp4
 
 ### <ins>Internal Noticing</ins>:
 
@@ -81,16 +92,19 @@ https://user-images.githubusercontent.com/61424547/176947727-e37a484c-db28-495f-
 I saw that even after providing Read-Execute permission to the allocated shellcode memory region, it wasn't shown as RX in ProcessHacker. Strangely enough, the bool value for VirtualProtectEx was also ***True*** while protecting target process memory with 0x20 [PAGE_EXECUTE_READ](https://docs.microsoft.com/en-us/windows/win32/Memory/memory-protection-constants#constants).
 I think this is happening because we applied page RW memory protection with `VirtualAllocEx()`. Then before creating the remote thread, we are allocating RX memory protection with `VirtualProtectEx()`. Not that sure of. If anybody seeing this, know about this, please correct me ;(
 
-#### Moneta:
+#### <ins>[Moneta](https://github.com/forrest-orr/moneta)</ins>:
 But with moneta, we can see it. 
 
 ![moneta](https://user-images.githubusercontent.com/61424547/176948027-7bdc8c7e-7773-48a1-ae9f-06ea54b700be.png)
 
-But without knowing the actual address, it is not getting shown by Process Hacker. It only not be visible from outside. It can bypass BlueTeam, unless the BlueTeamer isn't aware of this particular process memory address.
+But without knowing the actual address, it is not getting shown by Process Hacker. It only not be visible from outside. It can bypass BlueTeam, until the BlueTeamer isn't aware of this particular process memory address.
 
 ![processHacker](https://user-images.githubusercontent.com/61424547/176948132-1ffce1c6-ac63-472d-b8bc-a217791ab911.png)
 
-#### Floss:
+#### <ins>[Floss](https://github.com/mandiant/flare-floss)</ins>:
+
+I am able to bypass more or less all sensitive strings except, _Kernel32.dll_ as it is getting used by unobfuscated function call named, `LoadLibrary()` and `GetProcAddress()`. Other strings which caught my eyes were, _PROCESS_BASIC_INFORMATION_ and _PROCESSSINFOCLASS_, but I don't really think those things matter. But if those do, please do correct me.\
+As again, I'm learning :)
 
 #### WireShark Capture:
 
@@ -102,9 +116,16 @@ We can see that the text(process infos) sent out are all encrypted by Gmail's TL
 
 #### AV Bypass [Antiscan.me]():
 
+![](https://antiscan.me/images/result/WK9nNvebEk8v.png)
 
-#### Limitations:
-1. Vulnerable to [Floss](https://github.com/mandiant/flare-floss)
+Yupp! It got detected by one-and-only, ***Eset NOD32!***\
+No matter what I do, this is flagging me :worried:.
+
+When I commented out Loader part, I got this: [loader](https://antiscan.me/scan/new/result?id=ixWtfrWl0H3u)\
+When I commented out Dropper part, I got this: [dropper](https://antiscan.me/scan/new/result?id=nhjBNvvssumL)\
+When I used the whole binary, I got the above detection stats as I had already shown above :woozy_face:. \
+According to mathematics, I  should have got 4 detections, why one and why that particular AV only?\
+I am really not getting it, if I get time, I will look into it, again. Not getting a cleansheet is really annoying ;(
 
 ### Resources and Credits:
 
@@ -113,10 +134,8 @@ We can see that the text(process infos) sent out are all encrypted by Gmail's TL
 3. PInvoke:
     - [pinvoke](http://www.pinvoke.net/)
     - [specterops:Matt Hand](https://posts.specterops.io/offensive-p-invoke-leveraging-the-win32-api-from-managed-code-7eef4fdef16d)
-4. delegate:
-5. DInvoke:
-7. Obviously, the infamous [RTO:MalwareDevelopmentEssentials](https://institute.sektor7.net/red-team-operator-malware-development-essentials) course by [@SEKTOR7net](https://twitter.com/sektor7net).
-8. [@_winterknife_](https://twitter.com/_winterKnife_): For clearly making me understand the difference between stage-0, stage-1, stage-2, stage-3, etc payloads.
-9. Took reference from [FalconStrike](https://slaeryan.github.io/posts/falcon-zero-alpha.html) by [@_winterknife_](https://twitter.com/_winterKnife_).
-10. [@SoumyadeepBas12](https://twitter.com/SoumyadeepBas12): For helping me to succesfully evade the last AV, to get a clean sheet from [antiscan.me](https://antiscan.me/), it was really a pain to get over this AV, but  I did it ;).
-
+4. delegate: [YT:Tech69](https://www.youtube.com/c/Tech69YT). He also a amaizing dude!
+5. Obviously, the infamous [RTO:MalwareDevelopmentEssentials](https://institute.sektor7.net/red-team-operator-malware-development-essentials) course by [@SEKTOR7net](https://twitter.com/sektor7net).
+6. [@_winterknife_](https://twitter.com/_winterKnife_): For clearly making me understand the difference between stage-0, stage-1, stage-2, stage-3, etc payloads.
+7. Took reference from [FalconStrike](https://slaeryan.github.io/posts/falcon-zero-alpha.html) by [@_winterknife_](https://twitter.com/_winterKnife_).
+8. [@SoumyadeepBas12](https://twitter.com/SoumyadeepBas12): For helping me out when I got stuck doing this project.
