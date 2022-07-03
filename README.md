@@ -2,7 +2,7 @@
 
 [![](https://img.shields.io/badge/Category-Defense%20Evasion-green)](https://github.com/reveng007/) [![](https://img.shields.io/badge/Language-C%23-green)](https://github.com/reveng007/)
 
-Stealthy Loader-cum-dropper/stage-1/stager targeting Windows10
+A stealthy Loader-cum-dropper/stage-1/stager targeting Windows10 (till FUD according to antiscan.me)
 
 ### Technology behind Insider:
 
