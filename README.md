@@ -150,7 +150,7 @@ If anyone viewing this find out something wrong or if you think, I haven't credi
 5. Obviously, the infamous [RTO:MalwareDevelopmentEssentials](https://institute.sektor7.net/red-team-operator-malware-development-essentials) course by [@SEKTOR7net](https://twitter.com/sektor7net).
 6. [@_winterknife_](https://twitter.com/_winterKnife_): For clearly making me understand the difference between stage-0, stage-1, stage-2, stage-3, etc payloads.
 7. Took reference from [FalconStrike](https://slaeryan.github.io/posts/falcon-zero-alpha.html) by [@_winterknife_](https://twitter.com/_winterKnife_).
-8. [@SoumyadeepBas12](https://twitter.com/SoumyadeepBas12): For helping me out when I got stuck doing this project.
+8. [@SoumyadeepBas12](https://twitter.com/SoumyadeepBas12): For helping me out when I got stuck doing this project :+1:.
 
 ### Author: @reveng007 (Soumyanil Biswas)
 ---
