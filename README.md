@@ -131,7 +131,7 @@ I am really not getting it, if I get time, I will look into it, again. Not getti
 ### Edit: 
 If you Ask me, "Why have I used _AES_ encryption with url why not environmental keying factor?"\
 My answer would be, that would also work fine!\
-I was feeling lazy to remove AES and apply environmental XOR keying. But this will not do any harm. But I changed the string obfuscation part from AES encryption to environmental XOR keying as if I did not do that, this dropper would be flagged by _Floss_ by outputing sentive strings like hardcoded xor keys.
+I was feeling lazy to remove AES and apply environmental XOR keying. But this will not do any harm. But I changed the string obfuscation part from AES encryption to environmental XOR keying as if I did not do that, this dropper would be flagged by _Floss_ by outputing sentive strings like hardcoded xor keys. But in this case, we are using trgt machine's username as xor key, so no need of hardcoding.
 
 ### Resources and Credits:
 
