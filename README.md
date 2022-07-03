@@ -125,7 +125,7 @@ No matter what I do, this is flagging me :worried:.
 When I commented out Loader code part, I got this: [loader](https://antiscan.me/scan/new/result?id=ixWtfrWl0H3u)\
 When I commented out Dropper code part, I got this: [dropper](https://antiscan.me/scan/new/result?id=nhjBNvvssumL)\
 When I used the whole binary, I got the above detection stats as I had already shown above :woozy_face:. \
-According to mathematics, I  should have got 4 detections, why one and why that particular AV only?\
+According to mathematics, I  should have got 4 detections, why one ? and why that particular AV only?\
 I am really not getting it, if I get time, I will look into it, again. Not getting a cleansheet is really annoying ;(
 
 ### Edit: 
