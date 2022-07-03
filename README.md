@@ -123,7 +123,9 @@ We can see that the text(process infos) sent out are all encrypted by Gmail's TL
 
 ![](https://antiscan.me/images/result/0qo3UFgwjKme.png)
 
-Yupp! got a clean sheet!\
+Yupp! A clean sheet!
+After a long period of TrialnError\
+I did it...\
 ***Eset NOD32!***\
 No matter what I do, this was flagging me :worried:.
 
