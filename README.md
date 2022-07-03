@@ -101,7 +101,7 @@ But with moneta, we can see it.
 
 ![moneta](https://user-images.githubusercontent.com/61424547/176948027-7bdc8c7e-7773-48a1-ae9f-06ea54b700be.png)
 
-But without knowing the actual address, it is not getting shown by Process Hacker. It only not be visible from outside. It can bypass BlueTeam, until the BlueTeamer isn't aware of this particular process memory address.
+But without knowing the actual address, it is not getting shown by Process Hacker. It is only not be visible from outside. It can bypass BlueTeam, until the BlueTeamer isn't aware of this particular process memory address.
 
 ![processHacker](https://user-images.githubusercontent.com/61424547/176948132-1ffce1c6-ac63-472d-b8bc-a217791ab911.png)
 
@@ -131,6 +131,9 @@ When I commented out Dropper code part, I got this: [dropper](https://antiscan.m
 When I used the whole binary, I got the above detection stats as I had already shown above :woozy_face:. \
 According to mathematics, I  should have got 4 detections, why one ? and why that particular AV only?\
 I am really not getting it, if I get time, I will look into it, again. Not getting a cleansheet is really annoying ;(
+
+### NOTE:
+If anyone viewing this find out something wrong or if you think, I haven't credited your or work of someone else, please contact me via my socials. I didn't intensionally mean to do that but sometimes I simply forget, sorry! :sweat_smile:
 
 ### Resources and Credits:
 
