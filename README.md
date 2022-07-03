@@ -104,6 +104,7 @@ But without knowing the actual address, it is not getting shown by Process Hacke
 
 #### <ins>[Floss](https://github.com/mandiant/flare-floss)</ins>:
 
+Yes, encrypted strings are getting tracked by _Floss_ but that doesn't matter as long as they don't have the xor key (for decryption ofc!), which they don't.
 I am able to bypass more or less all sensitive strings except, _Kernel32.dll_ as it is getting used by unobfuscated function call named, `LoadLibrary()` and `GetProcAddress()`. Other strings which caught my eyes were, _PROCESS_BASIC_INFORMATION_ and _PROCESSSINFOCLASS_, but I don't really think those things matter. But if those do, please do correct me.\
 As again, I'm learning :)
 
@@ -127,14 +128,6 @@ When I commented out Dropper code part, I got this: [dropper](https://antiscan.m
 When I used the whole binary, I got the above detection stats as I had already shown above :woozy_face:. \
 According to mathematics, I  should have got 4 detections, why one ? and why that particular AV only?\
 I am really not getting it, if I get time, I will look into it, again. Not getting a cleansheet is really annoying ;(
-
-- If you Ask me, "Why have I used _AES_ encryption with url why not environmental keying factor?"\
-My answer would be, that would also work fine!\
-I was feeling lazy to remove AES and apply environmental XOR keying. But this will not do any harm.\
-I changed the string obfuscation part from AES encryption to environmental XOR keying as if I did not do that, this dropper would be flagged by _Floss_ by outputing sentive strings like hardcoded xor keys. But in this case, we are using trgt machine's username as xor key, so no need of hardcoding.
-
-### Edit:
-But one thing, I found out now (totally bypassed my eyes), Floss was able to extract AES key not the AES salt/iv though. This will still casue pain to BlueTeamers to extract the actual AES salt value, to decrypt the encrypted text. But anyways, I will be updating this AES portion within few days only.
 
 ### Resources and Credits:
 
