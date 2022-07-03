@@ -119,18 +119,20 @@ We can see that the text(process infos) sent out are all encrypted by Gmail's TL
 
 ![MailServer_iplookup](https://user-images.githubusercontent.com/61424547/176946957-60f1dce9-983e-4314-9fd8-6f54cbc04de7.PNG)
 
-#### AV Bypass [Antiscan.me]():
+#### AV Bypass [Antiscan.me](https://antiscan.me/):
 
-![](https://antiscan.me/images/result/WK9nNvebEk8v.png)
+![](https://antiscan.me/images/result/0qo3UFgwjKme.png)
 
-Yupp! It got detected by one-and-only, ***Eset NOD32!***\
-No matter what I do, this is flagging me :worried:.
+Yupp! got a clean sheet!\
+***Eset NOD32!***\
+No matter what I do, this was flagging me :worried:.
 
 When I commented out Loader code part, I got this: [loader](https://antiscan.me/scan/new/result?id=ixWtfrWl0H3u)\
 When I commented out Dropper code part, I got this: [dropper](https://antiscan.me/scan/new/result?id=nhjBNvvssumL)\
-When I used the whole binary, I got the above detection stats as I had already shown above :woozy_face:. \
+When I used the whole binary, I got the above detection stats same as loader portion :woozy_face:. \
 According to mathematics, I  should have got 4 detections, why one ? and why that particular AV only?\
-I am really not getting it, if I get time, I will look into it, again. Not getting a cleansheet is really annoying ;(
+I was really not getting it.\
+But when I used Environmental keying, for some reason or other I bypassed their stored signatures :smile:!
 
 ### NOTE:
 If anyone viewing this find out something wrong or if you think, I haven't credited your or work of someone else, please contact me via my socials. I didn't intensionally mean to do that but sometimes I simply forget, sorry! :sweat_smile:
