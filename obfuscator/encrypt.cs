@@ -496,10 +496,10 @@ class Program
 					Console.WriteLine("[!] Error encrypting");
                 }
             }
-		}
+	}
         else
         {
             Console.WriteLine("[!] Doesn't contain URL path");
         }
-	}
+    }
 }
