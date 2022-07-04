@@ -19,7 +19,7 @@ Tried using DInvoke to Obfuscate `LoadLibrary()` and `GetProcAddress()` but inst
 
 - Obfuscator/encrypt.cs:
 1. [For shellcode extraction and encryption]: place it in the directory in which .bin file is present.
-2. [For url encryption]: Nothing! Just paste and run.
+2. [For url and string encryption]: Nothing! Just paste and run.
 
 Example:
 ```
@@ -70,12 +70,12 @@ Usage:
 3. Compile: Obfuscator/encrypt.cs with compile.bat, stage2/remotewrite.cs with compile_remotewrite.bat (but at first write the credentials of sender's and receiver's/Operator's gmail) and stage2/mscorlib.cs with compile_mscorlib.bat.
 4. Now upload/ host those two stage2 in payload server/ github(github: because it will not be considered as malicious as it is considered to be a legitimate website. So, malware traffic from github will not be considered as creepy stuff, instead of that, it would be considered as legitimate).
 5. Encrypt those two urls using "Obfuscator/encrypt.exe" file with the previously mentioned flags and use those in "stage1/Insider.cs".
-6. Encrypt your shellcode, by following my previously mentioned flags in "Obfuscator/encrypt.exe" section and paste the encrypted shellcode in a text file host it in payload server/ github. Then again encrypt that url with "Obfuscator/encrypt.exe" and paste that in "stage1/Insider.cs".
-7. Now, compile the "stage1/Insider.cs" with compile.bat and put it in an antivirus enabled windows 10 nad test it.
+6. Encrypt your shellcode, by following my previously mentioned flags in "Obfuscator/encrypt.exe" section and paste the encrypted shellcode in a text file. Host it in payload server/ github. Then again encrypt that url with "Obfuscator/encrypt.exe" and paste that in "stage1/Insider.cs".
+7. Now, compile the "stage1/Insider.cs" with compile.bat and put it in an antivirus enabled windows 10 and test it.
 ```
 #### NOTE:
 I have named AMSI&ETW bypass .NET Assembly as "_mscorlib_" because if by chance, it is seen by a Blue Teamer and if that particular member is less experienced, the name `"mscorlib"` can bamboozle, making them think, "Hey, yes!! a .NET binary always loads up something called, mscorlib. It contains the core implementation of the .NET framework." Though there is a very little chance of our "_mscorlib.exe_" of getting caught running as a process in memory, as it is visible only a very little amount of time (probably in ms) in our dropper process memory, unless our dropper is getting debugged ;(.\
-BTW, This bamboozle thing was also told by Jean Maes :smile:.
+BTW, this bamboozle thing was also told by Jean Maes :smile:.
 
 ### Ability to recognise target by checking username in the form of xor key:
 
