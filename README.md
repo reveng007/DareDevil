@@ -13,7 +13,8 @@ Apart from the above shown diagram other abilties are:
 1. Sensitive string Obfuscation using Environmental Keying [TTP ID: T1480.00](https://attack.mitre.org/techniques/T1480/001/). I became aware of this concept from _[<ins>SANS Offensive WorkShop</ins>](https://www.sans.org/offensive-operations/): ['From zero to hero: Creating a reflective loader in C#'](https://www.youtube.com/watch?v=qeOCZGuVsi4)_ by [@Jean_Maes_1994](https://twitter.com/jean_maes_1994) and from [FalconStrike](https://slaeryan.github.io/posts/falcon-zero-alpha.html) by [@_winterknife_](https://twitter.com/_winterKnife_).
 2. All function calls are Obfuscated using delegate, except `LoadLibrary()` and `GetProcAddress()`.\
 Tried using DInvoke to Obfuscate `LoadLibrary()` and `GetProcAddress()` but instead, it got detected by 5 more AV engines ;(
-4. Abilty to Detect and Detach from debugger by using, `NtQueryInformationProcess()` and `NtRemoveProcessDebug()` respectively.
+4. Ability to **Detect** and **Detach** from **debugger** by using, `NtQueryInformationProcess()` and `NtRemoveProcessDebug()` respectively.
+5. Ability to **Determine** by **checking** whether the targeted machine is the intended/valid target machine (i.e. within the engagement contract domain) or not.
 
 ### Tools: Usage
 
