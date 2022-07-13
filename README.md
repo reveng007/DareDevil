@@ -138,8 +138,9 @@ I was really not getting it.\
 But when I used Environmental keying, for some reason or other I bypassed their stored signatures :smile:!
 
 ### NOTE:
-If anyone viewing this find out something wrong or if you think, I haven't credited your or work of someone else, please contact me via my socials. I didn't intensionally mean to do that but sometimes I simply forget, sorry! :sweat_smile:
+1. If anyone viewing this find out something wrong or if you think, I haven't credited your or work of someone else, please contact me via my socials. I didn't intensionally mean to do that but sometimes I simply forget, sorry! :sweat_smile:
 
+2. Please don't submit the samples to VirusTotal :cry:
 ### Resources and Credits:
 
 1. I learned Reflective loader implementation from watching the _[<ins>SANS Offensive WorkShop</ins>](https://www.sans.org/offensive-operations/): ['From zero to hero: Creating a reflective loader in C#'](https://www.youtube.com/watch?v=qeOCZGuVsi4)_ by [@Jean_Maes_1994](https://twitter.com/jean_maes_1994). Also thanks to him, for answering my questions in DM, so patiently :smile:!
