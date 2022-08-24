@@ -135,7 +135,8 @@ When I commented out Dropper code part, I got this: [dropper](https://antiscan.m
 When I used the whole binary, I got the above detection stats same as loader portion :woozy_face:. \
 According to mathematics, I  should have got 4 detections, why one ? and why that particular AV only?\
 I was really not getting it.\
-But when I used Environmental keying, for some reason or other I bypassed their stored signatures :smile:!
+But when I used Environmental keying, for some reason or other I bypassed their stored signatures :smile:!\
+> ***UPDATE***: I found out that in the case of _Evasion_ of Signatured Based AV, concept of normal mathematics fails. In here, to De-Signature signaturized malicious pattern, we have to change the **Entropy** of the already signatured malicious pattern. De-signaturization does not work like normal addition and substraction.
 
 ### NOTE:
 1. If anyone viewing this find out something wrong or if you think, I haven't credited your or work of someone else, please contact me via my socials. I didn't intensionally mean to do that but sometimes I simply forget, sorry! :sweat_smile:
