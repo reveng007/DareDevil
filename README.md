@@ -6,7 +6,7 @@ A stealthy Loader-cum-dropper/stage-1/stager targeting Windows10 (FUD till now, 
 
 ### Technology behind Insider:
 
-![Insider](https://user-images.githubusercontent.com/61424547/176930902-42f5bd9d-c1cd-4c73-a15e-cc5731d55d63.png)
+![Insider](https://user-images.githubusercontent.com/61424547/186763198-942ce657-ad69-4040-a766-c93fcfea81a1.png)
 
 ### Ability:
 Apart from the above shown diagram other abilties are:
@@ -80,7 +80,7 @@ BTW, this bamboozle thing was also told by Jean Maes :smile:.
 
 ### Ability to recognise target by checking username in the form of xor key:
 
-As discussed before in [Ability](https://github.com/reveng007/DareDevil/edit/main/README.md#ability) section, utilizing environmental keying factor, I hardcoded a encrypted test string with xor key (username of target) and then decrypted while running then compared it with the original one. If the condition is true then, our dropper is allowed to run else it turns off.
+As discussed before in [Ability](https://github.com/reveng007/DareDevil/edit/main/README.md#ability) section, utilizing environmental keying factor, I hardcoded a test string encrypted with xor key (username of target) and then decrypted the teststring using the username of the target machine retrieved in run time, then compared the decrypted text with the original one. If the condition is true then, our dropper is allowed to run else it turns off.
 
 ![image](https://user-images.githubusercontent.com/61424547/177057832-1b9c1eae-317b-496c-baaf-80dc871a3748.png)
 
@@ -149,7 +149,7 @@ But when I used Environmental keying, for some reason or other I bypassed their 
 3. PInvoke:
     - [pinvoke](http://www.pinvoke.net/)
     - [specterops:Matt Hand](https://posts.specterops.io/offensive-p-invoke-leveraging-the-win32-api-from-managed-code-7eef4fdef16d)
-4. delegate: [YT:Tech69](https://www.youtube.com/c/Tech69YT). He also a amaizing dude!
+4. delegate: [YT:Tech69](https://www.youtube.com/c/Tech69YT). He is also a amaizing dude!
 5. Obviously, the infamous [RTO:MalwareDevelopmentEssentials](https://institute.sektor7.net/red-team-operator-malware-development-essentials) course by [@SEKTOR7net](https://twitter.com/sektor7net).
 6. [@_winterknife_](https://twitter.com/_winterKnife_): For clearly making me understand the difference between stage-0, stage-1, stage-2, stage-3, etc payloads.
 7. Took reference from [FalconStrike](https://slaeryan.github.io/posts/falcon-zero-alpha.html) by [@_winterknife_](https://twitter.com/_winterKnife_).
