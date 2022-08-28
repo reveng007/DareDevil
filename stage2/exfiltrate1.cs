@@ -1,5 +1,5 @@
 /*
-Exfiltration via usage of SMTP protocol and port
+Exfiltration of processname and pids, via usage of SMTP protocol and port
 */
 using System;
 using System.Net;           // For NetworkCredentials
