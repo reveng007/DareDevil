@@ -6,7 +6,7 @@ A stealthy Loader-cum-dropper/stage-1/stager targeting Windows10 (FUD till now, 
 
 ### Technology behind Insider:
 
-![Insider](https://user-images.githubusercontent.com/61424547/186763198-942ce657-ad69-4040-a766-c93fcfea81a1.png)
+![Insider](https://user-images.githubusercontent.com/61424547/187096696-25093d56-4552-45d1-bcc7-168fe251b2ff.png)
 
 ### Ability:
 Apart from the above shown diagram other abilties are:
