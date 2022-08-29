@@ -120,7 +120,16 @@ We can see that the text(process infos) sent out are all encrypted by Gmail's TL
 
 ![MailServer_iplookup](https://user-images.githubusercontent.com/61424547/176946957-60f1dce9-983e-4314-9fd8-6f54cbc04de7.PNG)
 
-#### AV Bypass [Antiscan.me](https://antiscan.me/):
+#### Quick Scan: 
+1. Using [@matterpreter](https://twitter.com/matterpreter)'s [DefenderCheck](https://github.com/matterpreter/DefenderCheck)
+
+![image](https://user-images.githubusercontent.com/61424547/187219202-7a8aad87-50bc-4876-939e-d3b1c7e81000.png)
+
+I'm Assuming we are able to bypass Windows Defender as <ins>Benefit of Doubt</ins>. I wasn't aware of this outcome. I was known to this outcome rather.
+
+![image](https://user-images.githubusercontent.com/61424547/187219945-81ae4b0e-72b7-4ef0-a29a-7d9edc3353a3.png)
+
+2. Using [Antiscan.me](https://antiscan.me/):
 
 ![](https://antiscan.me/images/result/FQd8SUKDSr10.png)
 
