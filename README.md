@@ -144,8 +144,13 @@ When I commented out Dropper code part, I got this: [dropper](https://antiscan.m
 When I used the whole binary, I got the above detection stats same as loader portion :woozy_face:. \
 According to mathematics, I  should have got 4 detections, why one ? and why that particular AV only?\
 I was really not getting it.\
-But when I used Environmental keying, for some reason or other I bypassed their stored signatures :smile:!\
+But when I used Environmental keying, for some reason or other I bypassed their stored signatures :smile:!
 > ***UPDATE***: I found out that in the case of _Evasion_ of Signatured Based AV, concept of normal mathematics fails. In here, to De-Signature signaturized malicious pattern, we have to change the **Entropy** of the already signatured malicious pattern. De-signaturization does not work like normal addition and substraction.
+
+### To-Do list 👨‍🔧:
+1. Try using DInvoke to Obfuscate `LoadLibrary()` and `GetProcAddress()` WinApi, taking reference from [SharpSploit](https://github.com/cobbr/SharpSploit/blob/master/SharpSploit/Execution/DynamicInvoke/Native.cs), to hide them from getting detected from static analysis. [Change the name of the functions taken from _SharpSploit_ project]
+2. Adding PPID Spoofing
+3. Adding other Process Injection Types into it.
 
 ### NOTE:
 1. If anyone viewing this find out something wrong or if you think, I haven't credited your or work of someone else, please contact me via my socials. I didn't intensionally mean to do that but sometimes I simply forget, sorry! :sweat_smile:
