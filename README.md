@@ -154,6 +154,8 @@ But when I used Environmental keying, for some reason or other I bypassed their 
 2. Please don't submit the samples to VirusTotal :cry:
 ### Resources and Credits:
 
+### DISCLAIMER: This Project Only performs Signature based Evasion. Heuristics and behaviourial based Detection evasion is not Implemented in this Project.
+
 1. I learned Reflective loader implementation from watching the _[<ins>SANS Offensive WorkShop</ins>](https://www.sans.org/offensive-operations/): ['From zero to hero: Creating a reflective loader in C#'](https://www.youtube.com/watch?v=qeOCZGuVsi4)_ by [@Jean_Maes_1994](https://twitter.com/jean_maes_1994). Also thanks to him, for answering my questions in DM, so patiently :smile:!
 2. Other basics and offensive side of C# by following offensive tradecraft basics from _[<ins>DEFCON 29 Adversary Village</ins>](https://adversaryvillage.org/): ['Tradecraft Development in Adversary Simulations`](https://youtu.be/KJsVVEn4fFw)_ by [@fozavci](https://twitter.com/fozavci).
 3. PInvoke:
