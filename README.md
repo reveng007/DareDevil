@@ -147,7 +147,7 @@ But when I used Environmental keying, for some reason or other I bypassed their 
 1. Try using DInvoke to Obfuscate `LoadLibrary()` and `GetProcAddress()` WinApi, taking reference from [SharpSploit](https://github.com/cobbr/SharpSploit/blob/master/SharpSploit/Execution/DynamicInvoke/Native.cs), to hide them from getting detected from static analysis. [Change the name of the functions taken from _SharpSploit_ project]
 2. Adding PPID Spoofing
 3. Adding other Process Injection Types into it.
-4. Try Creating a shellcode which talks to server via smtp, imap, or other protocols which are not that much highlighted as socket creation alert!
+4. Try Creating a shellcode/PIC blob, which talks to server via smtp, imap, or other protocols which are not that much highlighted as suspicious IOC, like socket creation alert!
 
 ### NOTE:
 1. If anyone viewing this find out something wrong or if you think, I haven't credited your or work of someone else, please contact me via my socials. I didn't intensionally mean to do that but sometimes I simply forget, sorry! :sweat_smile:
